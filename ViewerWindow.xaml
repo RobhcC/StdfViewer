@@ -1,0 +1,101 @@
+<Window x:Class="StdfViewer.ViewerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="STDF Viewer"
+        Width="1500" Height="820"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Brush.Window}"
+        FontFamily="{StaticResource Font.UI}"
+        FontSize="13"
+        Foreground="{StaticResource Brush.Text}">
+    <DockPanel LastChildFill="True">
+
+        <!-- 顶部工具栏 -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Style.Toolbar}">
+            <DockPanel LastChildFill="True" Margin="12,8,12,8">
+                <Button x:Name="_open" DockPanel.Dock="Left" Content="Open STDF..."
+                        Style="{StaticResource Style.Button.Primary}" Click="OnOpenClick"/>
+                <Button x:Name="_all" DockPanel.Dock="Left" Content="All types" Margin="8,0,0,0"
+                        Style="{StaticResource Style.Button.Secondary}" Click="OnAllClick"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox x:Name="_jump" Width="76" Margin="10,0,4,0" VerticalAlignment="Center"
+                             ToolTipService.ToolTip="Type the # shown in the record list, then press Enter"
+                             KeyDown="OnJumpKeyDown"/>
+                    <TextBlock x:Name="_info" Margin="10,0,0,0" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" Style="{StaticResource Style.Text.Info}"
+                               Text="未打开文件"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 三个面板 -->
+        <Grid Margin="12,0,12,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="370"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="Record types in file"
+                               Style="{StaticResource Style.SectionTitle}"/>
+                    <ListView x:Name="_types" SelectionChanged="OnTypeSelected">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Type" Width="52" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                                <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding Count}"/>
+                                <GridViewColumn Header="Bytes" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
+                                <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1"/>
+
+            <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="Records (file order)"
+                               Style="{StaticResource Style.SectionTitle}"/>
+                    <ListView x:Name="_records" SelectionChanged="OnRecordSelected">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="#" Width="52" DisplayMemberBinding="{Binding No}"/>
+                                <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                                <GridViewColumn Header="Offset" Width="76" DisplayMemberBinding="{Binding Offset}"/>
+                                <GridViewColumn Header="LEN" Width="46" DisplayMemberBinding="{Binding Len}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="3"/>
+
+            <Border Grid.Column="4" Style="{StaticResource Style.Card}">
+                <DockPanel LastChildFill="True">
+                    <TextBlock x:Name="_recordHead" DockPanel.Dock="Top" Text="Fields"
+                               Style="{StaticResource Style.SectionTitle}"/>
+                    <ListView x:Name="_fields" Focusable="False">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Index}"/>
+                                <GridViewColumn Header="Field" Width="112" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="STDF type" Width="66" DisplayMemberBinding="{Binding Type}"/>
+                                <GridViewColumn Header="Value" Width="260" DisplayMemberBinding="{Binding Value}"/>
+                                <GridViewColumn Header="Raw bytes" Width="220" DisplayMemberBinding="{Binding Hex}"/>
+                                <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

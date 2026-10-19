@@ -1,0 +1,29 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 现代扁平浅色主题：颜色 -->
+    <SolidColorBrush x:Key="Brush.Window" Color="#F3F5F7"/>
+    <SolidColorBrush x:Key="Brush.Card" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Brush.Border" Color="#E3E7EC"/>
+    <SolidColorBrush x:Key="Brush.BorderStrong" Color="#D6DBE3"/>
+    <SolidColorBrush x:Key="Brush.Hover" Color="#F1F4F9"/>
+    <SolidColorBrush x:Key="Brush.Accent" Color="#2F6FED"/>
+    <SolidColorBrush x:Key="Brush.AccentHover" Color="#1E5FD8"/>
+    <SolidColorBrush x:Key="Brush.AccentPressed" Color="#1A52BA"/>
+    <SolidColorBrush x:Key="Brush.Text" Color="#1F2430"/>
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="#6B7280"/>
+    <SolidColorBrush x:Key="Brush.RowHover" Color="#F5F8FF"/>
+    <SolidColorBrush x:Key="Brush.RowSelected" Color="#E3EDFF"/>
+    <SolidColorBrush x:Key="Brush.Header" Color="#F7F9FB"/>
+    <SolidColorBrush x:Key="Brush.SplitterHover" Color="#D7DEE8"/>
+    <SolidColorBrush x:Key="Brush.ScrollThumb" Color="#C7CED8"/>
+    <SolidColorBrush x:Key="Brush.ScrollThumbHover" Color="#AEB8C4"/>
+    <SolidColorBrush x:Key="Brush.Disabled" Color="#B9C0CB"/>
+
+    <!-- 字体与尺寸 -->
+    <FontFamily x:Key="Font.UI">Segoe UI</FontFamily>
+    <Thickness x:Key="Pad.Button">12,5,12,5</Thickness>
+    <CornerRadius x:Key="Radius.Card">6</CornerRadius>
+    <CornerRadius x:Key="Radius.Button">4</CornerRadius>
+
+</ResourceDictionary>
