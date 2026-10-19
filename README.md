@@ -16,6 +16,8 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 - **Fields** panel — the selected record decoded field by field, showing the value, the raw bytes the field consumed, and a status (`header`, `truncated`, `omitted`, `layout gap`, ...).
 - Detects little/big endian from the record headers, and reports `CPU_TYPE` / `STDF_VER` from the FAR record.
 - Status bar summarises file size, record count, type count and scan time. Very large files are capped at 20,000 listed rows — pick a type to narrow the list.
+- **History** tab — every successfully parsed file is remembered (path, size, record count and per-type statistics). Click an entry to look at that parse result again; deleting an entry removes only the history row, never the `.std` on disk.
+- **Compare** tab — pick two history entries and diff them: a per-type count table, where rows that exist on only one side (`only left` / `only right`) are highlighted, plus a record-structure check that collapses the record stream into RLE segments and reports where the two files diverge.
 
 ### Screenshot
 
@@ -61,6 +63,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 - Unknown record types are listed but shown as `(no layout)` in the Fields panel.
 - If a record's declared length exceeds its layout, the leftover bytes are reported as a `layout gap`.
 - A few decode status messages are still in Chinese.
+- History snapshots keep per-type totals only, not the record-by-record sequence, so the structure comparison needs both files to still be on disk.
+- `history.json` is written next to the executable. If that folder is read-only, history still works for the current session but is not persisted.
 
 ### Project structure
 
@@ -74,6 +78,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 | `StdfRecordTable.cs` | Record and field definitions |
 | `StdfDecoder.cs` | Field decoder |
 | `RecordRow.cs` | Record list row model and builder |
+| `HistoryStore.cs` | Parse-result snapshots, persisted to `history.json` next to the executable |
+| `StdfComparer.cs` | Type-level diff, type-order check and RLE structure comparison |
 
 ---
 
@@ -89,6 +95,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 - **Fields** 面板：把选中记录逐字段解码，显示字段值、该字段实际占用的原始字节，以及解码状态（`header`、`truncated`、`omitted`、`layout gap` 等）。
 - 自动从记录头识别小端 / 大端，并从 FAR 记录读出 `CPU_TYPE` / `STDF_VER`。
 - 状态栏汇总文件大小、记录数、类型数和扫描耗时。超大文件最多列出 20000 行，选中具体类型可缩小范围。
+- **History** 页：每次成功解析都会留下快照（路径、大小、记录数、各类型统计）。点条目回看上次解析结果；删除只删历史条目，不动磁盘上的 `.std`。
+- **Compare** 页：选两条历史记录对比——逐类型条数差异表（只有一侧存在的 `only left` / `only right` 行有底色高亮），外加记录结构对比（把记录流折叠成 RLE 段，指出两份文件从哪一段开始不一样）。
 
 ### 运行环境
 
@@ -130,6 +138,8 @@ dotnet run -- 你的文件.std
 - 未知记录类型会列出，但 Fields 面板显示 `(no layout)`。
 - 记录的声明长度大于字段表时，多余字节会以 `layout gap` 提示。
 - 少量解码状态文案仍是中文。
+- 历史快照只保存类型层统计、不保存逐条记录序列，所以结构对比需要两个文件都还在磁盘上。
+- `history.json` 写在 exe 同目录；该目录只读时历史仍可在本次会话内使用，但不会落盘。
 
 ### 目录结构
 
@@ -143,3 +153,5 @@ dotnet run -- 你的文件.std
 | `StdfRecordTable.cs` | 记录与字段定义表 |
 | `StdfDecoder.cs` | 字段解码器 |
 | `RecordRow.cs` | 记录列表行模型与构建器 |
+| `HistoryStore.cs` | 解析结果快照（存到 exe 同目录的 `history.json`） |
+| `StdfComparer.cs` | 类型层差异、类型出现顺序与 RLE 结构对比 |

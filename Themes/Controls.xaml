@@ -127,6 +127,8 @@
         <Setter Property="Padding" Value="8,4,8,4"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -135,8 +137,9 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{StaticResource Radius.Button}" SnapsToDevicePixels="True">
                         <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
-                                      VerticalAlignment="Center" Focusable="False"
-                                      HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Focusable="False"
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
@@ -150,6 +153,19 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- 多行只读框：结构对比结果那种要能滚动、要顶对齐、等宽字体 -->
+    <Style x:Key="Style.TextBox.Multiline" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="AcceptsReturn" Value="True"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Background" Value="{StaticResource Brush.Header}"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
     </Style>
 
     <!-- ================= 列表（只改外观，保留默认模板以保证虚拟化） ================= -->
@@ -190,6 +206,18 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- 对比结果里"仅一侧有"的行用底色标出来 -->
+    <Style x:Key="Style.CompareRow" TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="only left">
+                <Setter Property="Background" Value="{StaticResource Brush.DiffOnlyLeft}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="only right">
+                <Setter Property="Background" Value="{StaticResource Brush.DiffOnlyRight}"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ================= 列表列头（保留 PART_HeaderGripper，列宽仍可拖动） ================= -->
@@ -283,6 +311,45 @@
                             <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
                             <Setter TargetName="Decrease" Property="Command" Value="ScrollBar.PageLeftCommand"/>
                             <Setter TargetName="Increase" Property="Command" Value="ScrollBar.PageRightCommand"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ================= 页签 ================= -->
+    <!-- 不重写 TabControl 模板：默认模板里有 PART_SelectedContentHost，重写容易出问题 -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="FontFamily" Value="{StaticResource Font.UI}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextMuted}"/>
+        <Setter Property="Padding" Value="16,8,16,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Bd" Background="Transparent"
+                            BorderBrush="Transparent" BorderThickness="0,0,0,2"
+                            Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource Brush.Hover}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Brush.Accent}"/>
+                            <Setter Property="Foreground" Value="{StaticResource Brush.Text}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

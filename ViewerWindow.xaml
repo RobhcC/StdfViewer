@@ -10,10 +10,10 @@
         Foreground="{StaticResource Brush.Text}">
     <DockPanel LastChildFill="True">
 
-        <!-- 顶部工具栏 -->
+        <!-- 顶部工具栏（始终可见，与页签无关） -->
         <Border DockPanel.Dock="Top" Style="{StaticResource Style.Toolbar}">
             <DockPanel LastChildFill="True" Margin="12,8,12,8">
-                <Button x:Name="_open" DockPanel.Dock="Left" Content="Open STDF..."
+                <Button x:Name="_open" DockPanel.Dock="Left" Content="Open STDF File"
                         Style="{StaticResource Style.Button.Primary}" Click="OnOpenClick"/>
                 <Button x:Name="_all" DockPanel.Dock="Left" Content="All types" Margin="8,0,0,0"
                         Style="{StaticResource Style.Button.Secondary}" Click="OnAllClick"/>
@@ -28,74 +28,227 @@
             </DockPanel>
         </Border>
 
-        <!-- 三个面板 -->
-        <Grid Margin="12,0,12,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="370"/>
-                <ColumnDefinition Width="6"/>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="6"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <TabControl x:Name="_tabs" Margin="12,4,12,0" SelectionChanged="OnTabChanged">
 
-            <Border Grid.Column="0" Style="{StaticResource Style.Card}">
-                <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Record types in file"
-                               Style="{StaticResource Style.SectionTitle}"/>
-                    <ListView x:Name="_types" SelectionChanged="OnTypeSelected">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Type" Width="52" DisplayMemberBinding="{Binding Name}"/>
-                                <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
-                                <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding Count}"/>
-                                <GridViewColumn Header="Bytes" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
-                                <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </DockPanel>
-            </Border>
+            <!-- ==================== 1. 浏览 ==================== -->
+            <TabItem Header="Browse">
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="370"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-            <GridSplitter Grid.Column="1"/>
+                    <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="Record types in file"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <ListView x:Name="_types" SelectionChanged="OnTypeSelected">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Type" Width="52" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                                        <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding Count}"/>
+                                        <GridViewColumn Header="Bytes" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
+                                        <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
 
-            <Border Grid.Column="2" Style="{StaticResource Style.Card}">
-                <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Records (file order)"
-                               Style="{StaticResource Style.SectionTitle}"/>
-                    <ListView x:Name="_records" SelectionChanged="OnRecordSelected">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="#" Width="52" DisplayMemberBinding="{Binding No}"/>
-                                <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Name}"/>
-                                <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
-                                <GridViewColumn Header="Offset" Width="76" DisplayMemberBinding="{Binding Offset}"/>
-                                <GridViewColumn Header="LEN" Width="46" DisplayMemberBinding="{Binding Len}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </DockPanel>
-            </Border>
+                    <GridSplitter Grid.Column="1"/>
 
-            <GridSplitter Grid.Column="3"/>
+                    <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="Records (file order)"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <ListView x:Name="_records" SelectionChanged="OnRecordSelected">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="#" Width="52" DisplayMemberBinding="{Binding No}"/>
+                                        <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                                        <GridViewColumn Header="Offset" Width="76" DisplayMemberBinding="{Binding Offset}"/>
+                                        <GridViewColumn Header="LEN" Width="46" DisplayMemberBinding="{Binding Len}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
 
-            <Border Grid.Column="4" Style="{StaticResource Style.Card}">
-                <DockPanel LastChildFill="True">
-                    <TextBlock x:Name="_recordHead" DockPanel.Dock="Top" Text="Fields"
-                               Style="{StaticResource Style.SectionTitle}"/>
-                    <ListView x:Name="_fields" Focusable="False">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Index}"/>
-                                <GridViewColumn Header="Field" Width="112" DisplayMemberBinding="{Binding Name}"/>
-                                <GridViewColumn Header="STDF type" Width="66" DisplayMemberBinding="{Binding Type}"/>
-                                <GridViewColumn Header="Value" Width="260" DisplayMemberBinding="{Binding Value}"/>
-                                <GridViewColumn Header="Raw bytes" Width="220" DisplayMemberBinding="{Binding Hex}"/>
-                                <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </DockPanel>
-            </Border>
-        </Grid>
+                    <GridSplitter Grid.Column="3"/>
+
+                    <Border Grid.Column="4" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock x:Name="_recordHead" DockPanel.Dock="Top" Text="Fields"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <ListView x:Name="_fields" Focusable="False">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Index}"/>
+                                        <GridViewColumn Header="Field" Width="112" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="STDF type" Width="66" DisplayMemberBinding="{Binding Type}"/>
+                                        <GridViewColumn Header="Value" Width="260" DisplayMemberBinding="{Binding Value}"/>
+                                        <GridViewColumn Header="Raw bytes" Width="220" DisplayMemberBinding="{Binding Hex}"/>
+                                        <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== 2. 历史解析记录 ==================== -->
+            <TabItem Header="History">
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="480"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <DockPanel DockPanel.Dock="Top" Margin="12,10,12,8" LastChildFill="False">
+                                <TextBlock Text="Parsed files" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button x:Name="_historyDelete" DockPanel.Dock="Right" Content="Delete"
+                                        Style="{StaticResource Style.Button.Secondary}"
+                                        Click="OnHistoryDeleteClick"/>
+                            </DockPanel>
+                            <ListView x:Name="_historyList" SelectionChanged="OnHistorySelected">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="File" Width="170" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="Parsed" Width="130" DisplayMemberBinding="{Binding ParsedAt}"/>
+                                        <GridViewColumn Header="Size" Width="92"
+                                                        DisplayMemberBinding="{Binding Size, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Records" Width="76"
+                                                        DisplayMemberBinding="{Binding Records, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Types" Width="56" DisplayMemberBinding="{Binding TypeCount}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Column="1"/>
+
+                    <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="Last parse result"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <TextBlock x:Name="_historySummary" DockPanel.Dock="Top" Margin="12,0,12,8"
+                                       TextWrapping="Wrap" Foreground="{StaticResource Brush.TextMuted}"
+                                       Text="选择左侧一条历史记录查看上次解析结果。"/>
+                            <ListView x:Name="_historyTypes">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="Typ,Sub" Width="70" DisplayMemberBinding="{Binding TypSub}"/>
+                                        <GridViewColumn Header="Count" Width="90"
+                                                        DisplayMemberBinding="{Binding Count, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Bytes" Width="100"
+                                                        DisplayMemberBinding="{Binding Bytes, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ==================== 3. 文件对比 ==================== -->
+            <TabItem Header="Compare">
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="Pick two parsed files"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <StackPanel DockPanel.Dock="Top" Margin="12,0,12,8">
+                                <TextBlock Text="Left:" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="_cmpLeftText" Margin="0,2,0,8" TextWrapping="Wrap"
+                                           Foreground="{StaticResource Brush.TextMuted}" Text="(none)"/>
+                                <TextBlock Text="Right:" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="_cmpRightText" Margin="0,2,0,0" TextWrapping="Wrap"
+                                           Foreground="{StaticResource Brush.TextMuted}" Text="(none)"/>
+                            </StackPanel>
+                            <StackPanel DockPanel.Dock="Bottom" Margin="12,8,12,12">
+                                <Button x:Name="_cmpSetLeft" Content="Set as left"
+                                        Style="{StaticResource Style.Button.Secondary}"
+                                        HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                        Click="OnSetLeftClick"/>
+                                <Button x:Name="_cmpSetRight" Content="Set as right"
+                                        Style="{StaticResource Style.Button.Secondary}"
+                                        HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                        Click="OnSetRightClick"/>
+                                <Button x:Name="_cmpCompare" Content="Compare"
+                                        Style="{StaticResource Style.Button.Primary}"
+                                        HorizontalAlignment="Stretch" Click="OnCompareClick"/>
+                            </StackPanel>
+                            <ListView x:Name="_cmpList">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="File" Width="150" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="Parsed" Width="110" DisplayMemberBinding="{Binding ParsedAt}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Column="1"/>
+
+                    <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+                        <Grid Margin="12,0,12,12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Type differences" Margin="0,10,0,6"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock x:Name="_cmpSummary" Grid.Row="1" Margin="0,0,0,8" TextWrapping="Wrap"
+                                       Foreground="{StaticResource Brush.TextMuted}"
+                                       Text="选择左右两份历史记录后点 Compare。"/>
+
+                            <ListView x:Name="_cmpTypes" Grid.Row="2" ItemContainerStyle="{StaticResource Style.CompareRow}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Typ,Sub" Width="80" DisplayMemberBinding="{Binding TypSub}"/>
+                                        <GridViewColumn Header="Name" Width="90" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="Left" Width="80"
+                                                        DisplayMemberBinding="{Binding LeftCount, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Right" Width="80"
+                                                        DisplayMemberBinding="{Binding RightCount, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Delta" Width="80"
+                                                        DisplayMemberBinding="{Binding Delta, StringFormat={}{0:N0}}"/>
+                                        <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding Status}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <TextBlock Grid.Row="3" Text="Record structure" Margin="0,10,0,6"
+                                       FontWeight="SemiBold"/>
+                            <TextBox x:Name="_cmpStruct" Grid.Row="4"
+                                     Style="{StaticResource Style.TextBox.Multiline}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

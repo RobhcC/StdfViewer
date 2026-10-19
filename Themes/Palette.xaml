@@ -19,6 +19,8 @@
     <SolidColorBrush x:Key="Brush.ScrollThumb" Color="#C7CED8"/>
     <SolidColorBrush x:Key="Brush.ScrollThumbHover" Color="#AEB8C4"/>
     <SolidColorBrush x:Key="Brush.Disabled" Color="#B9C0CB"/>
+    <SolidColorBrush x:Key="Brush.DiffOnlyLeft" Color="#FFF4E5"/>
+    <SolidColorBrush x:Key="Brush.DiffOnlyRight" Color="#EAF3FF"/>
 
     <!-- 字体与尺寸 -->
     <FontFamily x:Key="Font.UI">Segoe UI</FontFamily>
