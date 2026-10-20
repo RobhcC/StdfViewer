@@ -8,6 +8,8 @@
     <AssemblyName>StdfViewer</AssemblyName>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    <!-- 发布只产出这一种形态：自包含单文件，目标机不需要装 .NET -->
+    <PublishProfile>win-x64-single-file</PublishProfile>
   </PropertyGroup>
 
 </Project>
