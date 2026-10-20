@@ -112,11 +112,11 @@ namespace StdfViewer
                     if (len > 0 && pos + 4 < FileLength)
                     {
                         Add(pos, (int)(FileLength - pos - 4), typ, sub);
-                        Note = "末尾记录不完整：REC_LEN=" + len + "，实际只剩 " + (FileLength - pos - 4) + " 字节";
+                        Note = Loc.T("Str.Note.BadTail", len, FileLength - pos - 4);
                     }
                     else
                     {
-                        Note = "偏移 " + pos + " 处记录头无法解析（REC_LEN=" + len + "），扫描在此停止";
+                        Note = Loc.T("Str.Note.BadHeader", pos, len);
                     }
                     return;
                 }
@@ -126,7 +126,7 @@ namespace StdfViewer
             }
 
             if (pos < FileLength)
-                Note = "文件末尾残留 " + (FileLength - pos) + " 字节，不足一个记录头";
+                Note = Loc.T("Str.Note.Trailing", FileLength - pos);
         }
 
         private int Fill(byte[] buf, long from)
@@ -166,7 +166,7 @@ namespace StdfViewer
             CpuType = body[0];
             StdfVersion = body[1];
             if (IsBigEndianCpu(CpuType) != BigEndian)
-                Note = "CPU_TYPE=" + CpuType + " 与记录头实测字节序不一致，按实测字节序解码";
+                Note = Loc.T("Str.Note.Endian", CpuType);
         }
 
         // 已知的大端 CPU_TYPE；其余按小端处理

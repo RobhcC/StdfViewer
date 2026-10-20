@@ -7,6 +7,7 @@ namespace StdfViewer
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            Loc.Initialize();
             var window = new ViewerWindow();
             if (e.Args.Length > 0)
                 window.QueueLoad(e.Args[0]);

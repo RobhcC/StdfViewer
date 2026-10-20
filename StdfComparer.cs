@@ -13,6 +13,19 @@ namespace StdfViewer
         public long RightCount { get; set; }
         public long Delta { get; set; }
         public string Status { get; set; }
+
+        // Status 是稳定 token（样式触发器也按它判断），显示时再翻
+        public string StatusText
+        {
+            get
+            {
+                if (Status == StdfComparer.OnlyLeft)
+                    return Loc.T("Str.Compare.OnlyLeft");
+                if (Status == StdfComparer.OnlyRight)
+                    return Loc.T("Str.Compare.OnlyRight");
+                return Status;
+            }
+        }
     }
 
     // 记录流按"相邻同类型合并"后的一个段
@@ -99,19 +112,15 @@ namespace StdfViewer
             for (int i = 0; i < min; i++)
             {
                 if (la[i] != lb[i])
-                {
-                    return "type order: differs (left " + la.Count + " types, right " + lb.Count + " types)"
-                        + "; first difference at #" + (i + 1) + ": left " + la[i] + ", right " + lb[i];
-                }
+                    return Loc.T("Str.Compare.OrderDiffers", la.Count, lb.Count, i + 1, la[i], lb[i]);
             }
             if (la.Count != lb.Count)
             {
-                string extra = la.Count > lb.Count ? "left" : "right";
-                string missing = la.Count > lb.Count ? "right" : "left";
-                return "type order: same up to #" + min + ", " + extra + " has " + Math.Abs(la.Count - lb.Count)
-                    + " more types than " + missing;
+                string extra = Loc.T(la.Count > lb.Count ? "Str.Compare.LeftSide" : "Str.Compare.RightSide");
+                string missing = Loc.T(la.Count > lb.Count ? "Str.Compare.RightSide" : "Str.Compare.LeftSide");
+                return Loc.T("Str.Compare.OrderExtra", min, extra, Math.Abs(la.Count - lb.Count), missing);
             }
-            return "type order: identical (" + la.Count + " types)";
+            return Loc.T("Str.Compare.OrderSame", la.Count);
         }
 
         private static List<string> OrderedNames(IList<HistoryTypeStat> types)

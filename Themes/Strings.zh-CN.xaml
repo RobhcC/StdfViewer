@@ -1,0 +1,147 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- 记录名（MIR、PTR…）与字段名（LOT_ID…）不翻译，界面只翻文案。 -->
+
+    <sys:String x:Key="Str.Tb.Open">打开 STDF 文件</sys:String>
+    <sys:String x:Key="Str.Tb.AllTypes">全部类型</sys:String>
+    <sys:String x:Key="Str.Tb.JumpTip">输入记录列表里的 #，回车跳转</sys:String>
+    <sys:String x:Key="Str.Tb.LangTip">切换语言</sys:String>
+
+    <sys:String x:Key="Str.Tab.Summary">汇总</sys:String>
+    <sys:String x:Key="Str.Tab.Browse">浏览</sys:String>
+    <sys:String x:Key="Str.Tab.History">历史</sys:String>
+    <sys:String x:Key="Str.Tab.Compare">对比</sys:String>
+
+    <sys:String x:Key="Str.Browse.Types">文件中的记录类型</sys:String>
+    <sys:String x:Key="Str.Browse.Records">记录（文件顺序）</sys:String>
+    <sys:String x:Key="Str.Browse.Fields">字段</sys:String>
+
+    <sys:String x:Key="Str.Col.Type">类型</sys:String>
+    <sys:String x:Key="Str.Col.Count">数量</sys:String>
+    <sys:String x:Key="Str.Col.Bytes">字节</sys:String>
+    <sys:String x:Key="Str.Col.First">首条</sys:String>
+    <sys:String x:Key="Str.Col.Offset">偏移</sys:String>
+    <sys:String x:Key="Str.Col.Field">字段</sys:String>
+    <sys:String x:Key="Str.Col.StdfType">STDF 类型</sys:String>
+    <sys:String x:Key="Str.Col.Value">值</sys:String>
+    <sys:String x:Key="Str.Col.RawBytes">原始字节</sys:String>
+    <sys:String x:Key="Str.Col.Status">状态</sys:String>
+    <sys:String x:Key="Str.Col.File">文件</sys:String>
+    <sys:String x:Key="Str.Col.Parsed">解析时间</sys:String>
+    <sys:String x:Key="Str.Col.Size">大小</sys:String>
+    <sys:String x:Key="Str.Col.Records">记录数</sys:String>
+    <sys:String x:Key="Str.Col.Types">类型数</sys:String>
+    <sys:String x:Key="Str.Col.Name">名称</sys:String>
+    <sys:String x:Key="Str.Col.Left">左</sys:String>
+    <sys:String x:Key="Str.Col.Right">右</sys:String>
+    <sys:String x:Key="Str.Col.Delta">差值</sys:String>
+
+    <sys:String x:Key="Str.History.ParsedFiles">已解析文件</sys:String>
+    <sys:String x:Key="Str.History.Delete">删除</sys:String>
+    <sys:String x:Key="Str.History.LastResult">上次解析结果</sys:String>
+    <sys:String x:Key="Str.History.Placeholder">选择左侧一条历史记录查看上次解析结果。</sys:String>
+    <sys:String x:Key="Str.History.DeleteEmpty">先在左侧列表里选中一条历史记录，再点删除。</sys:String>
+    <sys:String x:Key="Str.History.DeleteTitle">删除历史记录</sys:String>
+    <sys:String x:Key="Str.History.DeleteConfirm">从历史记录中移除这一条？&#x0A;磁盘上的 .std 文件不会被删除。&#x0A;&#x0A;{0}</sys:String>
+
+    <sys:String x:Key="Str.Compare.Pick">选择两份已解析文件</sys:String>
+    <sys:String x:Key="Str.Compare.Left">左侧：</sys:String>
+    <sys:String x:Key="Str.Compare.Right">右侧：</sys:String>
+    <sys:String x:Key="Str.Compare.None">（未选）</sys:String>
+    <sys:String x:Key="Str.Compare.SetLeft">设为左侧</sys:String>
+    <sys:String x:Key="Str.Compare.SetRight">设为右侧</sys:String>
+    <sys:String x:Key="Str.Compare.Run">开始对比</sys:String>
+    <sys:String x:Key="Str.Compare.TypeDiff">类型差异</sys:String>
+    <sys:String x:Key="Str.Compare.Placeholder">选择左右两份历史记录后点开始对比。</sys:String>
+    <sys:String x:Key="Str.Compare.SelectFirst">先在左侧列表里选中一条历史记录，再点设为左侧/设为右侧。</sys:String>
+    <sys:String x:Key="Str.Compare.SameSide">左右两侧不能是同一条历史记录，请换一条。</sys:String>
+    <sys:String x:Key="Str.Compare.Comparing">正在对比…</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyLeft">仅左侧</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyRight">仅右侧</sys:String>
+    <sys:String x:Key="Str.Compare.Struct">记录结构</sys:String>
+    <sys:String x:Key="Str.Compare.Rescanned">已从磁盘重新扫描</sys:String>
+    <sys:String x:Key="Str.Compare.Snapshot">历史快照，磁盘上没有该文件</sys:String>
+    <sys:String x:Key="Str.Compare.SideLine">左侧：{0}   右侧：{1}   [{2}]</sys:String>
+    <sys:String x:Key="Str.Compare.RecordsDelta">记录 {0} -> {1}   （{2}）</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyLeftCount">仅左侧有的类型：{0}</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyRightCount">仅右侧：{0}</sys:String>
+    <sys:String x:Key="Str.Compare.LeftNote">左侧提示：{0}</sys:String>
+    <sys:String x:Key="Str.Compare.RightNote">右侧提示：{0}</sys:String>
+    <sys:String x:Key="Str.Compare.StructUnavailable">记录结构（RLE 段）：不可用——需要两个文件都还在磁盘上。</sys:String>
+    <sys:String x:Key="Str.Compare.StructHistoryOnly">历史快照只保留每种类型的总数，没有记录序列。</sys:String>
+    <sys:String x:Key="Str.Compare.StructIdentical">记录结构：一致（{0} 段）</sys:String>
+    <sys:String x:Key="Str.Compare.StructDiffers">记录结构：不一致</sys:String>
+    <sys:String x:Key="Str.Compare.Segments">段数</sys:String>
+    <sys:String x:Key="Str.Compare.CommonPrefix">公共前缀</sys:String>
+    <sys:String x:Key="Str.Compare.CommonSuffix">公共后缀</sys:String>
+    <sys:String x:Key="Str.Compare.DiffWindow">差异窗口</sys:String>
+    <sys:String x:Key="Str.Compare.LeftWindow">左侧窗口</sys:String>
+    <sys:String x:Key="Str.Compare.RightWindow">右侧窗口</sys:String>
+    <sys:String x:Key="Str.Compare.LeftSide">左</sys:String>
+    <sys:String x:Key="Str.Compare.RightSide">右</sys:String>
+    <sys:String x:Key="Str.Compare.NoSegment">（无）</sys:String>
+    <sys:String x:Key="Str.Compare.OrderDiffers">类型顺序：不同（左 {0} 类，右 {1} 类）；首个差异在第 {2} 项：左 {3}，右 {4}</sys:String>
+    <sys:String x:Key="Str.Compare.OrderExtra">类型顺序：前 {0} 项相同，{1} 比 {3} 多 {2} 种类型</sys:String>
+    <sys:String x:Key="Str.Compare.OrderSame">类型顺序：一致（{0} 类）</sys:String>
+
+    <sys:String x:Key="Str.Summary.Empty">打开一个文件后在这里显示汇总。</sys:String>
+    <sys:String x:Key="Str.Kpi.Size">大小</sys:String>
+    <sys:String x:Key="Str.Kpi.Records">记录数</sys:String>
+    <sys:String x:Key="Str.Kpi.Types">类型数</sys:String>
+    <sys:String x:Key="Str.Kpi.Duts">DUT 数</sys:String>
+    <sys:String x:Key="Str.Kpi.Yield">良率</sys:String>
+    <sys:String x:Key="Str.Kpi.Scan">扫描耗时</sys:String>
+    <sys:String x:Key="Str.Kpi.Endian">字节序</sys:String>
+    <sys:String x:Key="Str.Summary.File">文件</sys:String>
+    <sys:String x:Key="Str.Summary.Counts">统计</sys:String>
+    <sys:String x:Key="Str.File.Name">文件名</sys:String>
+    <sys:String x:Key="Str.File.Path">路径</sys:String>
+    <sys:String x:Key="Str.File.Size">大小</sys:String>
+    <sys:String x:Key="Str.File.LastWrite">最后修改</sys:String>
+    <sys:String x:Key="Str.File.ScanTime">扫描耗时</sys:String>
+    <sys:String x:Key="Str.File.Endian">字节序</sys:String>
+    <sys:String x:Key="Str.File.Note">扫描告警</sys:String>
+    <sys:String x:Key="Str.Count.Records">记录数</sys:String>
+    <sys:String x:Key="Str.Count.Types">类型数</sys:String>
+    <sys:String x:Key="Str.Word.LittleEndian">小端</sys:String>
+    <sys:String x:Key="Str.Word.BigEndian">大端</sys:String>
+    <sys:String x:Key="Str.Word.Na">无</sys:String>
+
+    <sys:String x:Key="Str.Status.NoFile">未打开文件</sys:String>
+    <sys:String x:Key="Str.Status.Scanning">正在扫描 {0} …</sys:String>
+    <sys:String x:Key="Str.Status.ListCapped">  （列表上限 {0}，点左侧类型缩小范围）</sys:String>
+    <sys:String x:Key="Str.Lbl.Records">记录</sys:String>
+    <sys:String x:Key="Str.Lbl.Types">类型</sys:String>
+    <sys:String x:Key="Str.Lbl.Scan">扫描</sys:String>
+    <sys:String x:Key="Str.Lbl.Listed">列出</sys:String>
+    <sys:String x:Key="Str.Lbl.Parsed">解析</sys:String>
+    <sys:String x:Key="Str.Lbl.Note">提示</sys:String>
+    <sys:String x:Key="Str.Lbl.History">历史</sys:String>
+    <sys:String x:Key="Str.Lbl.Settings">设置</sys:String>
+
+    <sys:String x:Key="Str.Dec.Empty">（空）</sys:String>
+    <sys:String x:Key="Str.Dec.NoLayout">（无字段表）</sys:String>
+    <sys:String x:Key="Str.Dec.Unclaimed">（未归属）</sys:String>
+    <sys:String x:Key="Str.Dec.NotSet">未填</sys:String>
+    <sys:String x:Key="Str.Dec.OutOfRange">超出可显示范围</sys:String>
+    <sys:String x:Key="Str.Dec.UnknownRecord">未知记录类型 {0}</sys:String>
+    <sys:String x:Key="Str.Dec.Gap">字段表解完还剩 {0} 字节：布局可能缺字段</sys:String>
+    <sys:String x:Key="Str.Dec.OptionalOmitted">尾部 {0} 个可选字段未写入</sys:String>
+    <sys:String x:Key="Str.St.Ok">正常</sys:String>
+    <sys:String x:Key="Str.St.Header">头部</sys:String>
+    <sys:String x:Key="Str.St.Omitted">缺省</sys:String>
+    <sys:String x:Key="Str.St.Truncated">截断</sys:String>
+    <sys:String x:Key="Str.St.LayoutGap">布局缺口</sys:String>
+    <sys:String x:Key="Str.St.UnknownType">未知类型</sys:String>
+
+    <sys:String x:Key="Str.Note.BadTail">末尾记录不完整：REC_LEN={0}，实际只剩 {1} 字节</sys:String>
+    <sys:String x:Key="Str.Note.BadHeader">偏移 {0} 处记录头无法解析（REC_LEN={1}），扫描在此停止</sys:String>
+    <sys:String x:Key="Str.Note.Trailing">文件末尾残留 {0} 字节，不足一个记录头</sys:String>
+    <sys:String x:Key="Str.Note.Endian">CPU_TYPE={0} 与记录头实测字节序不一致，按实测字节序解码</sys:String>
+    <sys:String x:Key="Str.Store.LoadFailed">history.json 读取失败：{0}</sys:String>
+    <sys:String x:Key="Str.Store.NotWritable">{0} 不可写，历史记录未保存：{1}</sys:String>
+    <sys:String x:Key="Str.Dlg.OpenTitle">打开 STDF 文件</sys:String>
+    <sys:String x:Key="Str.Dlg.OpenFilter">STDF 文件 (*.std)|*.std|所有文件 (*.*)|*.*</sys:String>
+</ResourceDictionary>

@@ -145,7 +145,7 @@ namespace StdfViewer
             catch (Exception ex)
             {
                 _entries.Clear();
-                LastError = "history.json 读取失败：" + ex.Message;
+                LastError = Loc.T("Str.Store.LoadFailed", ex.Message);
             }
         }
 
@@ -214,7 +214,7 @@ namespace StdfViewer
             }
             catch (Exception ex)
             {
-                LastError = FilePath + " 不可写，历史记录未保存：" + ex.Message;
+                LastError = Loc.T("Str.Store.NotWritable", FilePath, ex.Message);
             }
         }
     }

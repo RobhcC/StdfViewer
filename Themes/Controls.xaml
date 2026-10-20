@@ -333,6 +333,8 @@
         <Setter Property="Foreground" Value="{StaticResource Brush.TextMuted}"/>
         <Setter Property="Padding" Value="16,8,16,8"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <!-- 页内容要铺满页签区：TabControl 会把选中 TabItem 的这个值同步给内容宿主 -->
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">

@@ -13,25 +13,135 @@
         <!-- 顶部工具栏（始终可见，与页签无关） -->
         <Border DockPanel.Dock="Top" Style="{StaticResource Style.Toolbar}">
             <DockPanel LastChildFill="True" Margin="12,8,12,8">
-                <Button x:Name="_open" DockPanel.Dock="Left" Content="Open STDF File"
+                <Button x:Name="_open" DockPanel.Dock="Left" Content="{DynamicResource Str.Tb.Open}"
                         Style="{StaticResource Style.Button.Primary}" Click="OnOpenClick"/>
-                <Button x:Name="_all" DockPanel.Dock="Left" Content="All types" Margin="8,0,0,0"
+                <Button x:Name="_all" DockPanel.Dock="Left" Content="{DynamicResource Str.Tb.AllTypes}" Margin="8,0,0,0"
                         Style="{StaticResource Style.Button.Secondary}" Click="OnAllClick"/>
+                <Button x:Name="_lang" DockPanel.Dock="Right" Margin="8,0,0,0" MinWidth="76"
+                        Style="{StaticResource Style.Button.Secondary}"
+                        ToolTipService.ToolTip="{DynamicResource Str.Tb.LangTip}"
+                        Click="OnLanguageClick"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBox x:Name="_jump" Width="76" Margin="10,0,4,0" VerticalAlignment="Center"
-                             ToolTipService.ToolTip="Type the # shown in the record list, then press Enter"
+                             ToolTipService.ToolTip="{DynamicResource Str.Tb.JumpTip}"
                              KeyDown="OnJumpKeyDown"/>
                     <TextBlock x:Name="_info" Margin="10,0,0,0" VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis" Style="{StaticResource Style.Text.Info}"
-                               Text="未打开文件"/>
+                               TextTrimming="CharacterEllipsis" Style="{StaticResource Style.Text.Info}"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
         <TabControl x:Name="_tabs" Margin="12,4,12,0" SelectionChanged="OnTabChanged">
 
+            <!-- ==================== 0. 汇总 ==================== -->
+            <TabItem x:Name="_tabSummary" Header="{DynamicResource Str.Tab.Summary}">
+                <Grid Margin="0,0,0,12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource Style.Card}" Margin="0,8,0,8">
+                        <WrapPanel Margin="14,10,14,10">
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Size}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiSize" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Records}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiRecords" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Types}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiTypes" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Duts}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiDuts" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Yield}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiYield" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,32,0">
+                                <TextBlock Text="{DynamicResource Str.Kpi.Scan}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiScan" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource Str.Kpi.Endian}" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock x:Name="_kpiEndian" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </WrapPanel>
+                    </Border>
+
+                    <TextBlock x:Name="_summaryEmpty" Grid.Row="1" Margin="12,8,0,0"
+                               Text="{DynamicResource Str.Summary.Empty}"
+                               Style="{StaticResource Style.Text.Info}"/>
+
+                    <ScrollViewer x:Name="_summaryScroll" Grid.Row="1"
+                                  HorizontalContentAlignment="Stretch"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="_summarySections">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Style.Card}" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Style.SectionTitle}"/>
+                                            <ItemsControl ItemsSource="{Binding Fields}" Margin="12,0,12,8">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,2,0,2">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="200"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       Foreground="{StaticResource Brush.TextMuted}"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                                                       TextWrapping="Wrap"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <ListView ItemsSource="{Binding Bins}" Margin="12,0,12,10" MaxHeight="240">
+                                                <ListView.Style>
+                                                    <Style TargetType="ListView">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasBins}" Value="False">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Style>
+                                                <ListView.View>
+                                                    <GridView>
+                                                        <GridViewColumn Header="HEAD_NUM" Width="92"
+                                                                        DisplayMemberBinding="{Binding HeadNum}"/>
+                                                        <GridViewColumn Header="SITE_NUM" Width="92"
+                                                                        DisplayMemberBinding="{Binding SiteNum}"/>
+                                                        <GridViewColumn Header="BIN_NUM" Width="90"
+                                                                        DisplayMemberBinding="{Binding BinNum}"/>
+                                                        <GridViewColumn Header="BIN_CNT" Width="110"
+                                                                        DisplayMemberBinding="{Binding BinCount}"/>
+                                                        <GridViewColumn Header="BIN_PF" Width="80"
+                                                                        DisplayMemberBinding="{Binding BinPf}"/>
+                                                        <GridViewColumn Header="BIN_NAM" Width="300"
+                                                                        DisplayMemberBinding="{Binding BinName}"/>
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
             <!-- ==================== 1. 浏览 ==================== -->
-            <TabItem Header="Browse">
+            <TabItem x:Name="_tabBrowse" Header="{DynamicResource Str.Tab.Browse}">
                 <Grid Margin="0,0,0,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="370"/>
@@ -43,16 +153,16 @@
 
                     <Border Grid.Column="0" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="Record types in file"
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Browse.Types}"
                                        Style="{StaticResource Style.SectionTitle}"/>
                             <ListView x:Name="_types" SelectionChanged="OnTypeSelected">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Type" Width="52" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Type}" Width="52" DisplayMemberBinding="{Binding Name}"/>
                                         <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
-                                        <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding Count}"/>
-                                        <GridViewColumn Header="Bytes" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
-                                        <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Count}" Width="70" DisplayMemberBinding="{Binding Count}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Bytes}" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.First}" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -63,15 +173,15 @@
 
                     <Border Grid.Column="2" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="Records (file order)"
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Browse.Records}"
                                        Style="{StaticResource Style.SectionTitle}"/>
                             <ListView x:Name="_records" SelectionChanged="OnRecordSelected">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="#" Width="52" DisplayMemberBinding="{Binding No}"/>
-                                        <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Type}" Width="50" DisplayMemberBinding="{Binding Name}"/>
                                         <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
-                                        <GridViewColumn Header="Offset" Width="76" DisplayMemberBinding="{Binding Offset}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Offset}" Width="76" DisplayMemberBinding="{Binding Offset}"/>
                                         <GridViewColumn Header="LEN" Width="46" DisplayMemberBinding="{Binding Len}"/>
                                     </GridView>
                                 </ListView.View>
@@ -83,17 +193,17 @@
 
                     <Border Grid.Column="4" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
-                            <TextBlock x:Name="_recordHead" DockPanel.Dock="Top" Text="Fields"
+                            <TextBlock x:Name="_recordHead" DockPanel.Dock="Top" Text="{DynamicResource Str.Browse.Fields}"
                                        Style="{StaticResource Style.SectionTitle}"/>
                             <ListView x:Name="_fields" Focusable="False">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Index}"/>
-                                        <GridViewColumn Header="Field" Width="112" DisplayMemberBinding="{Binding Name}"/>
-                                        <GridViewColumn Header="STDF type" Width="66" DisplayMemberBinding="{Binding Type}"/>
-                                        <GridViewColumn Header="Value" Width="260" DisplayMemberBinding="{Binding Value}"/>
-                                        <GridViewColumn Header="Raw bytes" Width="220" DisplayMemberBinding="{Binding Hex}"/>
-                                        <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Field}" Width="104" DisplayMemberBinding="{Binding NameText}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.StdfType}" Width="66" DisplayMemberBinding="{Binding Type}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Value}" Width="240" DisplayMemberBinding="{Binding ValueText}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.RawBytes}" Width="200" DisplayMemberBinding="{Binding Hex}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Status}" Width="90" DisplayMemberBinding="{Binding StatusText}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -103,7 +213,7 @@
             </TabItem>
 
             <!-- ==================== 2. 历史解析记录 ==================== -->
-            <TabItem Header="History">
+            <TabItem x:Name="_tabHistory" Header="{DynamicResource Str.Tab.History}">
                 <Grid Margin="0,0,0,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="480"/>
@@ -114,21 +224,21 @@
                     <Border Grid.Column="0" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
                             <DockPanel DockPanel.Dock="Top" Margin="12,10,12,8" LastChildFill="False">
-                                <TextBlock Text="Parsed files" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                <Button x:Name="_historyDelete" DockPanel.Dock="Right" Content="Delete"
+                                <TextBlock Text="{DynamicResource Str.History.ParsedFiles}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button x:Name="_historyDelete" DockPanel.Dock="Right" Content="{DynamicResource Str.History.Delete}"
                                         Style="{StaticResource Style.Button.Secondary}"
                                         Click="OnHistoryDeleteClick"/>
                             </DockPanel>
                             <ListView x:Name="_historyList" SelectionChanged="OnHistorySelected">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="File" Width="170" DisplayMemberBinding="{Binding FileName}"/>
-                                        <GridViewColumn Header="Parsed" Width="130" DisplayMemberBinding="{Binding ParsedAt}"/>
-                                        <GridViewColumn Header="Size" Width="92"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.File}" Width="170" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Parsed}" Width="130" DisplayMemberBinding="{Binding ParsedAt}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Size}" Width="92"
                                                         DisplayMemberBinding="{Binding Size, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Records" Width="76"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Records}" Width="76"
                                                         DisplayMemberBinding="{Binding Records, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Types" Width="56" DisplayMemberBinding="{Binding TypeCount}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Types}" Width="56" DisplayMemberBinding="{Binding TypeCount}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -139,21 +249,20 @@
 
                     <Border Grid.Column="2" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="Last parse result"
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.History.LastResult}"
                                        Style="{StaticResource Style.SectionTitle}"/>
                             <TextBlock x:Name="_historySummary" DockPanel.Dock="Top" Margin="12,0,12,8"
-                                       TextWrapping="Wrap" Foreground="{StaticResource Brush.TextMuted}"
-                                       Text="选择左侧一条历史记录查看上次解析结果。"/>
+                                       TextWrapping="Wrap" Foreground="{StaticResource Brush.TextMuted}"/>
                             <ListView x:Name="_historyTypes">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Type}" Width="60" DisplayMemberBinding="{Binding Name}"/>
                                         <GridViewColumn Header="Typ,Sub" Width="70" DisplayMemberBinding="{Binding TypSub}"/>
-                                        <GridViewColumn Header="Count" Width="90"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Count}" Width="90"
                                                         DisplayMemberBinding="{Binding Count, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Bytes" Width="100"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Bytes}" Width="100"
                                                         DisplayMemberBinding="{Binding Bytes, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="First" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.First}" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -163,7 +272,7 @@
             </TabItem>
 
             <!-- ==================== 3. 文件对比 ==================== -->
-            <TabItem Header="Compare">
+            <TabItem x:Name="_tabCompare" Header="{DynamicResource Str.Tab.Compare}">
                 <Grid Margin="0,0,0,12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="280"/>
@@ -173,34 +282,34 @@
 
                     <Border Grid.Column="0" Style="{StaticResource Style.Card}">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="Pick two parsed files"
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Compare.Pick}"
                                        Style="{StaticResource Style.SectionTitle}"/>
                             <StackPanel DockPanel.Dock="Top" Margin="12,0,12,8">
-                                <TextBlock Text="Left:" FontWeight="SemiBold"/>
+                                <TextBlock Text="{DynamicResource Str.Compare.Left}" FontWeight="SemiBold"/>
                                 <TextBlock x:Name="_cmpLeftText" Margin="0,2,0,8" TextWrapping="Wrap"
-                                           Foreground="{StaticResource Brush.TextMuted}" Text="(none)"/>
-                                <TextBlock Text="Right:" FontWeight="SemiBold"/>
+                                           Foreground="{StaticResource Brush.TextMuted}"/>
+                                <TextBlock Text="{DynamicResource Str.Compare.Right}" FontWeight="SemiBold"/>
                                 <TextBlock x:Name="_cmpRightText" Margin="0,2,0,0" TextWrapping="Wrap"
-                                           Foreground="{StaticResource Brush.TextMuted}" Text="(none)"/>
+                                           Foreground="{StaticResource Brush.TextMuted}"/>
                             </StackPanel>
                             <StackPanel DockPanel.Dock="Bottom" Margin="12,8,12,12">
-                                <Button x:Name="_cmpSetLeft" Content="Set as left"
+                                <Button x:Name="_cmpSetLeft" Content="{DynamicResource Str.Compare.SetLeft}"
                                         Style="{StaticResource Style.Button.Secondary}"
                                         HorizontalAlignment="Stretch" Margin="0,0,0,6"
                                         Click="OnSetLeftClick"/>
-                                <Button x:Name="_cmpSetRight" Content="Set as right"
+                                <Button x:Name="_cmpSetRight" Content="{DynamicResource Str.Compare.SetRight}"
                                         Style="{StaticResource Style.Button.Secondary}"
                                         HorizontalAlignment="Stretch" Margin="0,0,0,6"
                                         Click="OnSetRightClick"/>
-                                <Button x:Name="_cmpCompare" Content="Compare"
+                                <Button x:Name="_cmpCompare" Content="{DynamicResource Str.Compare.Run}"
                                         Style="{StaticResource Style.Button.Primary}"
                                         HorizontalAlignment="Stretch" Click="OnCompareClick"/>
                             </StackPanel>
                             <ListView x:Name="_cmpList">
                                 <ListView.View>
                                     <GridView>
-                                        <GridViewColumn Header="File" Width="150" DisplayMemberBinding="{Binding FileName}"/>
-                                        <GridViewColumn Header="Parsed" Width="110" DisplayMemberBinding="{Binding ParsedAt}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.File}" Width="150" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Parsed}" Width="110" DisplayMemberBinding="{Binding ParsedAt}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
@@ -219,29 +328,28 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="Type differences" Margin="0,10,0,6"
+                            <TextBlock Grid.Row="0" Text="{DynamicResource Str.Compare.TypeDiff}" Margin="0,10,0,6"
                                        FontWeight="SemiBold"/>
                             <TextBlock x:Name="_cmpSummary" Grid.Row="1" Margin="0,0,0,8" TextWrapping="Wrap"
-                                       Foreground="{StaticResource Brush.TextMuted}"
-                                       Text="选择左右两份历史记录后点 Compare。"/>
+                                       Foreground="{StaticResource Brush.TextMuted}"/>
 
                             <ListView x:Name="_cmpTypes" Grid.Row="2" ItemContainerStyle="{StaticResource Style.CompareRow}">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Header="Typ,Sub" Width="80" DisplayMemberBinding="{Binding TypSub}"/>
-                                        <GridViewColumn Header="Name" Width="90" DisplayMemberBinding="{Binding Name}"/>
-                                        <GridViewColumn Header="Left" Width="80"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Name}" Width="90" DisplayMemberBinding="{Binding Name}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Left}" Width="80"
                                                         DisplayMemberBinding="{Binding LeftCount, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Right" Width="80"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Right}" Width="80"
                                                         DisplayMemberBinding="{Binding RightCount, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Delta" Width="80"
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Delta}" Width="80"
                                                         DisplayMemberBinding="{Binding Delta, StringFormat={}{0:N0}}"/>
-                                        <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding Status}"/>
+                                        <GridViewColumn Header="{DynamicResource Str.Col.Status}" Width="90" DisplayMemberBinding="{Binding StatusText}"/>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
 
-                            <TextBlock Grid.Row="3" Text="Record structure" Margin="0,10,0,6"
+                            <TextBlock Grid.Row="3" Text="{DynamicResource Str.Compare.Struct}" Margin="0,10,0,6"
                                        FontWeight="SemiBold"/>
                             <TextBox x:Name="_cmpStruct" Grid.Row="4"
                                      Style="{StaticResource Style.TextBox.Multiline}"/>

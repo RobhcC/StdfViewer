@@ -10,6 +10,7 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 
 ### Features
 
+- **Summary** tab — a one-page overview of the loaded file: size / records / types / DUT count / yield / scan time / byte order, then the decoded `File`, `MIR`, `MRR`, `SDR`, `WIR`/`WRR`/`WCR`, `PCR` sections, `HBR` / `SBR` tables and a record-count breakdown. Record names and field names are always shown in English.
 - **Scan** the whole STDF file into a record index (offset / type / length). The scan runs in the background, so the window stays responsive on large files.
 - **Record types** panel — per type/sub pair: count, total bytes and first record number. Click a row to filter the record list.
 - **Records** panel — records in file order with `#`, type name, `typ,sub`, offset and `REC_LEN`. Type a record number into the box and press Enter to jump to it.
@@ -18,15 +19,12 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 - Status bar summarises file size, record count, type count and scan time. Very large files are capped at 20,000 listed rows — pick a type to narrow the list.
 - **History** tab — every successfully parsed file is remembered (path, size, record count and per-type statistics). Click an entry to look at that parse result again; deleting an entry removes only the history row, never the `.std` on disk.
 - **Compare** tab — pick two history entries and diff them: a per-type count table, where rows that exist on only one side (`only left` / `only right`) are highlighted, plus a record-structure check that collapses the record stream into RLE segments and reports where the two files diverge.
-
-### Screenshot
-
-![STDF Viewer](docs/screenshot.png)
+- **English / 中文** — the button on the right of the toolbar switches the UI language immediately, no restart. The choice is remembered in `settings.json` next to the executable; the first run follows the system language.
 
 ### Requirements
 
 - Windows 10 / 11
-- .NET 9 SDK to build; the .NET 9 Desktop Runtime is enough to run a published build
+- Build: .NET 9 SDK. The published `StdfViewer.exe` needs nothing installed.
 
 ### Build and run
 
@@ -43,12 +41,26 @@ dotnet run -- <your-file>.std
 
 Launching with no argument starts with an empty window — use **Open STDF...** to pick a file.
 
+### Publish
+
+There is exactly one release shape: a **single self-contained exe**. It needs nothing installed — no .NET runtime, no VC++ redistributable. `Publish` is pinned to the `win-x64-single-file` profile:
+
+```powershell
+dotnet publish .\StdfViewer.csproj
+# -> bin\publish\StdfViewer.exe   (~63 MB, one file)
+```
+
+On first start the app unpacks its native libraries to `%TEMP%\.net` (one-time, ~0.6 s; later starts are unaffected). `history.json` / `settings.json` are created next to the exe; if that folder is read-only the app still works, the preferences just are not persisted.
+
+The output of a plain `dotnet build` is a development artifact and still needs the .NET 9 Desktop Runtime — ship `bin\publish\StdfViewer.exe`. WPF cannot be trimmed or AOT-compiled, so ~63 MB is the floor for a self-contained WPF app.
+
 ### Usage
 
 1. **Open STDF...** (or pass a path on the command line) to load a file.
-2. Left panel: click a record type to narrow the middle list; **All types** clears the filter.
-3. Middle panel: click a record. The `#` column is the record number, which is what the jump box expects.
-4. Right panel: the decoded fields of that record. `Raw bytes` shows exactly the bytes consumed by the field, so a field list that does not add up is visible at a glance.
+2. **Summary** tab: the file header, `MIR`/`MRR`/`SDR`, wafer records, bin tables and record counts.
+3. **Browse** tab — left panel: click a record type to narrow the middle list; **All types** clears the filter.
+4. Middle panel: click a record. The `#` column is the record number, which is what the jump box expects.
+5. Right panel: the decoded fields of that record. `Raw bytes` shows exactly the bytes consumed by the field, so a field list that does not add up is visible at a glance.
 
 ### Supported record types
 
@@ -62,9 +74,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 - `MPR` and `FTR` layouts come from the specification table and have not been regression-tested against real bytes.
 - Unknown record types are listed but shown as `(no layout)` in the Fields panel.
 - If a record's declared length exceeds its layout, the leftover bytes are reported as a `layout gap`.
-- A few decode status messages are still in Chinese.
 - History snapshots keep per-type totals only, not the record-by-record sequence, so the structure comparison needs both files to still be on disk.
-- `history.json` is written next to the executable. If that folder is read-only, history still works for the current session but is not persisted.
+- `history.json` (parse history) and `settings.json` (UI language) are written next to the executable. If that folder is read-only, both still work for the current session but are not persisted.
 
 ### Project structure
 
@@ -74,9 +85,13 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 | `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | Window layout (XAML) and interaction logic |
 | `Themes/Palette.xaml` | Colours, font and size tokens |
 | `Themes/Controls.xaml` | Control styles (buttons, lists, headers, scrollbars, splitters) |
+| `Themes/Strings.en-US.xaml` / `Themes/Strings.zh-CN.xaml` | UI strings; record and field names stay English |
+| `Loc.cs` | Language switching and `T(key)` lookups |
+| `UiSettings.cs` | UI preferences, persisted to `settings.json` |
 | `StdfFile.cs` | File scan: record index, byte order detection, type summary |
 | `StdfRecordTable.cs` | Record and field definitions |
 | `StdfDecoder.cs` | Field decoder |
+| `StdfSummary.cs` | Summary-tab model built from a scanned file |
 | `RecordRow.cs` | Record list row model and builder |
 | `HistoryStore.cs` | Parse-result snapshots, persisted to `history.json` next to the executable |
 | `StdfComparer.cs` | Type-level diff, type-order check and RLE structure comparison |
@@ -89,6 +104,7 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 
 ### 功能
 
+- **汇总页**：一页看完当前文件——大小 / 记录数 / 类型数 / DUT 数 / 良率 / 扫描耗时 / 字节序，下面依次是 `File`、`MIR`、`MRR`、`SDR`、`WIR`/`WRR`/`WCR`、`PCR` 各记录段的字段、`HBR` / `SBR` 分箱表和记录条数统计。记录名与字段名始终显示英文。
 - **扫描**整个 STDF 文件，建立记录索引（偏移 / 类型 / 长度）；扫描在后台线程执行，大文件时界面不会卡住。
 - **Record types** 面板：按 类型/子类型 统计条数、总字节数、首个记录号；点击某行即可过滤中间的记录列表。
 - **Records** 面板：按文件顺序列出记录，显示 `#`、记录名、`typ,sub`、偏移和 `REC_LEN`；在跳转框里输入记录号回车即可跳转。
@@ -97,11 +113,12 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 - 状态栏汇总文件大小、记录数、类型数和扫描耗时。超大文件最多列出 20000 行，选中具体类型可缩小范围。
 - **History** 页：每次成功解析都会留下快照（路径、大小、记录数、各类型统计）。点条目回看上次解析结果；删除只删历史条目，不动磁盘上的 `.std`。
 - **Compare** 页：选两条历史记录对比——逐类型条数差异表（只有一侧存在的 `only left` / `only right` 行有底色高亮），外加记录结构对比（把记录流折叠成 RLE 段，指出两份文件从哪一段开始不一样）。
+- **中英双语**：工具栏右侧按钮即时切换界面语言，不用重启。选择记在 exe 同目录的 `settings.json`；首次启动跟随系统语言。
 
 ### 运行环境
 
 - Windows 10 / 11
-- 构建需要 .NET 9 SDK；只运行发布产物的话，装 .NET 9 Desktop Runtime 即可
+- 构建需要 .NET 9 SDK；发布出来的单个 exe 不需要安装任何运行时
 
 ### 构建与运行
 
@@ -118,12 +135,26 @@ dotnet run -- 你的文件.std
 
 不带参数启动时是一个空窗口，点 **Open STDF...** 选择文件即可。
 
+### 发布
+
+只有一种发布形态：**自包含单文件 exe**。目标机器不需要装任何东西——不用 .NET 运行时，也不用 VC++ 运行库。`Publish` 已固定使用 `win-x64-single-file` 配置：
+
+```powershell
+dotnet publish .\StdfViewer.csproj
+# 产物：bin\publish\StdfViewer.exe（约 63 MB，只有一个文件）
+```
+
+首次启动会把原生库解到 `%TEMP%\.net`（一次性，约 +0.6 秒；之后启动不受影响）。`history.json` / `settings.json` 写在 exe 同目录；该目录只读时程序照常运行，只是偏好不会保存。
+
+普通 `dotnet build` 的产物是开发用中间件，仍需 .NET 9 Desktop Runtime——分发时只给 `bin\publish\StdfViewer.exe`。WPF 不支持裁剪和 AOT，自包含 WPF 程序大约 63 MB 起步。
+
 ### 使用步骤
 
 1. 点 **Open STDF...**（或在命令行带上文件路径）加载文件。
-2. 左侧面板：点击某个记录类型可过滤中间列表；**All types** 清除过滤。
-3. 中间面板：点击一条记录，`#` 列就是可用于跳转框的记录号。
-4. 右侧面板：显示该记录的字段解码结果。`Raw bytes` 是该字段实际占用的字节，字段表对不上时一眼可见。
+2. **汇总页**：文件头、`MIR`/`MRR`/`SDR`、wafer 记录、分箱表和记录条数。
+3. **浏览页**左侧面板：点击某个记录类型可过滤中间列表；**All types** 清除过滤。
+4. 中间面板：点击一条记录，`#` 列就是可用于跳转框的记录号。
+5. 右侧面板：显示该记录的字段解码结果。`Raw bytes` 是该字段实际占用的字节，字段表对不上时一眼可见。
 
 ### 支持的记录类型
 
@@ -137,9 +168,8 @@ dotnet run -- 你的文件.std
 - `MPR` 与 `FTR` 的字段表按规范表抄录，尚未与真实字节做过回归验证。
 - 未知记录类型会列出，但 Fields 面板显示 `(no layout)`。
 - 记录的声明长度大于字段表时，多余字节会以 `layout gap` 提示。
-- 少量解码状态文案仍是中文。
 - 历史快照只保存类型层统计、不保存逐条记录序列，所以结构对比需要两个文件都还在磁盘上。
-- `history.json` 写在 exe 同目录；该目录只读时历史仍可在本次会话内使用，但不会落盘。
+- `history.json`（解析历史）与 `settings.json`（界面语言）写在 exe 同目录；该目录只读时两者仍可在本次会话内使用，但不会落盘。
 
 ### 目录结构
 
@@ -149,9 +179,13 @@ dotnet run -- 你的文件.std
 | `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | 窗口界面（XAML）与交互逻辑 |
 | `Themes/Palette.xaml` | 颜色、字体与尺寸资源 |
 | `Themes/Controls.xaml` | 控件样式（按钮、列表、列头、滚动条、分割条） |
+| `Themes/Strings.en-US.xaml` / `Themes/Strings.zh-CN.xaml` | 界面文案；记录名与字段名不翻译 |
+| `Loc.cs` | 语言切换与 `T(key)` 取词 |
+| `UiSettings.cs` | 界面偏好，落到 `settings.json` |
 | `StdfFile.cs` | 文件扫描：记录索引、字节序识别、类型统计 |
 | `StdfRecordTable.cs` | 记录与字段定义表 |
 | `StdfDecoder.cs` | 字段解码器 |
+| `StdfSummary.cs` | 汇总页模型（从已扫描的文件构建） |
 | `RecordRow.cs` | 记录列表行模型与构建器 |
 | `HistoryStore.cs` | 解析结果快照（存到 exe 同目录的 `history.json`） |
 | `StdfComparer.cs` | 类型层差异、类型出现顺序与 RLE 结构对比 |

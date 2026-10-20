@@ -100,7 +100,7 @@ namespace StdfViewer
 
     public static class StdfRecordTable
     {
-        // 记录号按 本工程采用的 STDF V4 表，与官方 STDF 编号不同：FAR=0,10 / PIR=5,10 / RDR=1,70
+        // 记录号按本工程采用的 STDF V4 表定义，与官方 STDF 编号不同：FAR=0,10 / PIR=5,10 / RDR=1,70
         private static readonly StdfRecordDef[] Defs =
         {
             new StdfRecordDef("FAR", 0, 10, new[]

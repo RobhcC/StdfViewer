@@ -13,6 +13,29 @@ namespace StdfViewer
         public string Value { get; set; }
         public string Hex { get; set; }
         public string Status { get; set; }
+
+        // 字段名 / 状态是稳定 token（代码里要比较），只在显示时翻译；值里只有空串占位需要翻译
+        public string NameText
+        {
+            get
+            {
+                if (Name == StdfDecoder.NoLayoutToken)
+                    return Loc.T("Str.Dec.NoLayout");
+                if (Name == StdfDecoder.UnclaimedToken)
+                    return Loc.T("Str.Dec.Unclaimed");
+                return Name;
+            }
+        }
+
+        public string ValueText
+        {
+            get { return Value == StdfDecoder.EmptyToken ? Loc.T("Str.Dec.Empty") : Value; }
+        }
+
+        public string StatusText
+        {
+            get { return Loc.Status(Status); }
+        }
     }
 
     public sealed class DecodedRecord
@@ -30,6 +53,10 @@ namespace StdfViewer
     public static class StdfDecoder
     {
         private const int HexLimit = 48;
+
+        public const string EmptyToken = "(empty)";
+        public const string NoLayoutToken = "(no layout)";
+        public const string UnclaimedToken = "(unclaimed)";
 
         public static DecodedRecord Decode(StdfFile file, int seq)
         {
@@ -55,8 +82,8 @@ namespace StdfViewer
             StdfRecordDef def = StdfRecordTable.Find(typ, sub);
             if (def == null)
             {
-                rec.Rows.Add(new FieldRow { Index = 3, Name = "(no layout)", Type = "", Value = body.Length + " bytes", Hex = Hex(body, 0, body.Length), Status = "unknown type" });
-                rec.Status = "未知记录类型 " + rec.TypSub;
+                rec.Rows.Add(new FieldRow { Index = 3, Name = NoLayoutToken, Type = "", Value = body.Length + " bytes", Hex = Hex(body, 0, body.Length), Status = "unknown type" });
+                rec.Status = Loc.T("Str.Dec.UnknownRecord", rec.TypSub);
                 rec.Consumed = body.Length;
                 return rec;
             }
@@ -87,17 +114,17 @@ namespace StdfViewer
                 rec.Rows.Add(new FieldRow
                 {
                     Index = rec.Rows.Count,
-                    Name = "(unclaimed)",
+                    Name = UnclaimedToken,
                     Type = "",
                     Value = (body.Length - cur.Pos) + " bytes",
                     Hex = Hex(body, cur.Pos, body.Length - cur.Pos),
                     Status = "layout gap",
                 });
-                rec.Status = "字段表解完还剩 " + (body.Length - cur.Pos) + " 字节：布局可能缺字段";
+                rec.Status = Loc.T("Str.Dec.Gap", body.Length - cur.Pos);
             }
             else if (omitted > 0)
             {
-                rec.Status = "尾部 " + omitted + " 个可选字段未写入";
+                rec.Status = Loc.T("Str.Dec.OptionalOmitted", omitted);
             }
             return rec;
         }
@@ -174,7 +201,7 @@ namespace StdfViewer
             private static string TimeText(long seconds)
             {
                 if (seconds <= 0)
-                    return "未填";
+                    return Loc.T("Str.Dec.NotSet");
                 return _fmt(seconds);
             }
 
@@ -182,7 +209,7 @@ namespace StdfViewer
             {
                 const long max = 4102444800L;
                 if (seconds > max)
-                    return "超出可显示范围";
+                    return Loc.T("Str.Dec.OutOfRange");
                 return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local).AddSeconds(seconds).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
             }
 
@@ -358,7 +385,7 @@ namespace StdfViewer
                     return "truncated";
                 }
                 _pos++;
-                value = n == 0 ? "(empty)" : Encoding.ASCII.GetString(_b, _pos, n);
+                value = n == 0 ? EmptyToken : Encoding.ASCII.GetString(_b, _pos, n);
                 _pos += n;
                 return "";
             }
@@ -379,7 +406,7 @@ namespace StdfViewer
                     return "truncated";
                 }
                 _pos++;
-                value = n == 0 ? "(empty)" : n + " bytes = " + Hex(_b, _pos, n);
+                value = n == 0 ? EmptyToken : n + " bytes = " + Hex(_b, _pos, n);
                 _pos += n;
                 return "";
             }

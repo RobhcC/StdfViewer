@@ -33,14 +33,24 @@ namespace StdfViewer
         private bool _loading;
         private HistoryEntry _cmpLeft;
         private HistoryEntry _cmpRight;
+        private SummaryResult _summary;
+        private DecodedRecord _record;
+        private ComparePair _comparePair;
+        private bool _compareOnDisk;
 
         public ViewerWindow()
         {
             InitializeComponent();
+            Loc.LanguageChanged += OnLanguageChanged;
             _store.Load();
             _historyList.ItemsSource = _store.Entries;
             _cmpList.ItemsSource = _store.Entries;
+            _info.Text = Loc.T("Str.Status.NoFile");
+            _historySummary.Text = Loc.T("Str.History.Placeholder");
+            _cmpSummary.Text = Loc.T("Str.Compare.Placeholder");
+            UpdateLangButton();
             UpdateCompareLabels();
+            ApplySummary();
         }
 
         public void QueueLoad(string path)
@@ -57,8 +67,8 @@ namespace StdfViewer
         {
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
-                Filter = "STDF files (*.std)|*.std|All files (*.*)|*.*",
-                Title = "Open STDF file",
+                Filter = Loc.T("Str.Dlg.OpenFilter"),
+                Title = Loc.T("Str.Dlg.OpenTitle"),
             };
             if (dlg.ShowDialog(this) != true)
                 return;
@@ -76,7 +86,7 @@ namespace StdfViewer
         {
             if (_all == null || _jump == null)
                 return;
-            bool browse = _tabs.SelectedIndex == 0;
+            bool browse = ReferenceEquals(_tabs.SelectedItem, _tabBrowse);
             _all.IsEnabled = browse;
             _jump.IsEnabled = browse;
         }
@@ -87,7 +97,7 @@ namespace StdfViewer
                 return;
             _loading = true;
             _open.IsEnabled = false;
-            _info.Text = "scanning " + path + " ...";
+            _info.Text = Loc.T("Str.Status.Scanning", path);
             StdfFile file = await Task.Run(delegate { return StdfFile.Scan(path); });
             _open.IsEnabled = true;
             _loading = false;
@@ -100,6 +110,8 @@ namespace StdfViewer
             _store.Record(file);
             if (_historyList.SelectedIndex < 0 && _historyList.Items.Count > 0)
                 _historyList.SelectedIndex = 0;
+            _summary = null;
+            ApplySummary();
             ShowRecords();
         }
 
@@ -111,23 +123,37 @@ namespace StdfViewer
             _records.ItemsSource = rows;
             if (rows.Count > 0)
                 _records.SelectedIndex = 0;
-            int total = _filter == null ? _file.Count : _filter.Length;
-            string cap = total > rows.Count ? "  (list capped at " + ListRowLimit.ToString("N0", CultureInfo.InvariantCulture) + ", pick a type to narrow)" : "";
-            _info.Text = Summary(rows.Count) + cap;
+            _info.Text = BuildInfoLine(rows.Count);
         }
 
-        private string Summary(long shown)
+        private void RefreshInfo()
         {
-            return System.IO.Path.GetFileName(_file.Path)
-                + "   " + _file.FileLength.ToString("N0", CultureInfo.InvariantCulture) + " B"
-                + "   CPU_TYPE=" + _file.CpuType + " STDF_VER=" + _file.StdfVersion
-                + (_file.BigEndian ? " (big-endian)" : " (little-endian)")
-                + "   records=" + _file.Count.ToString("N0", CultureInfo.InvariantCulture)
-                + "   types=" + _file.Types.Count
-                + "   scan=" + _file.ScanTime.TotalMilliseconds.ToString("F0", CultureInfo.InvariantCulture) + "ms"
-                + "   listed=" + shown.ToString("N0", CultureInfo.InvariantCulture)
-                + (_file.Note.Length > 0 ? "   NOTE: " + _file.Note : "")
-                + (_store.LastError.Length > 0 ? "   HISTORY: " + _store.LastError : "");
+            var rows = _records.ItemsSource as List<RecordRow>;
+            _info.Text = BuildInfoLine(rows == null ? 0 : rows.Count);
+        }
+
+        private string BuildInfoLine(long shown)
+        {
+            var text = new StringBuilder();
+            text.Append(Path.GetFileName(_file.Path))
+                .Append("   ").Append(N(_file.FileLength)).Append(" B")
+                .Append("   CPU_TYPE=").Append(_file.CpuType.ToString(CultureInfo.InvariantCulture))
+                .Append(" STDF_VER=").Append(_file.StdfVersion.ToString(CultureInfo.InvariantCulture))
+                .Append("   ").Append(EndianWord(_file.BigEndian))
+                .Append("   ").Append(Loc.T("Str.Lbl.Records")).Append('=').Append(N(_file.Count))
+                .Append("   ").Append(Loc.T("Str.Lbl.Types")).Append('=').Append(_file.Types.Count.ToString(CultureInfo.InvariantCulture))
+                .Append("   ").Append(Loc.T("Str.Lbl.Scan")).Append('=').Append(_file.ScanTime.TotalMilliseconds.ToString("F0", CultureInfo.InvariantCulture)).Append("ms")
+                .Append("   ").Append(Loc.T("Str.Lbl.Listed")).Append('=').Append(N(shown));
+            long total = _filter == null ? _file.Count : _filter.Length;
+            if (total > shown)
+                text.Append(Loc.T("Str.Status.ListCapped", ListRowLimit.ToString("N0", CultureInfo.InvariantCulture)));
+            if (!string.IsNullOrEmpty(_file.Note))
+                text.Append("   ").Append(Loc.T("Str.Lbl.Note")).Append(": ").Append(_file.Note);
+            if (!string.IsNullOrEmpty(_store.LastError))
+                text.Append("   ").Append(Loc.T("Str.Lbl.History")).Append(": ").Append(_store.LastError);
+            if (!string.IsNullOrEmpty(UiSettings.LastError))
+                text.Append("   ").Append(Loc.T("Str.Lbl.Settings")).Append(": ").Append(UiSettings.LastError);
+            return text.ToString();
         }
 
         private void OnTypeSelected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -144,11 +170,16 @@ namespace StdfViewer
             var row = _records.SelectedItem as RecordRow;
             if (row == null || _file == null)
                 return;
-            int seq = row.Seq;
+            ShowRecord(row.Seq);
+        }
+
+        private void ShowRecord(int seq)
+        {
             DecodedRecord rec = StdfDecoder.Decode(_file, seq);
+            _record = rec;
             _recordHead.Text = "#" + (seq + 1) + " " + rec.RecordName + " (" + rec.TypSub + ")"
                 + "  offset=0x" + rec.Offset.ToString("X", CultureInfo.InvariantCulture)
-                + "  REC_LEN=" + rec.DeclaredLen + "  decoded=" + rec.Consumed + "  " + rec.Status;
+                + "  REC_LEN=" + rec.DeclaredLen + "  decoded=" + rec.Consumed + "  " + Loc.Status(rec.Status);
             _fields.ItemsSource = rec.Rows;
         }
 
@@ -169,6 +200,94 @@ namespace StdfViewer
             _records.SelectedIndex = index;
         }
 
+        // ---------------- 语言 ----------------
+
+        private void OnLanguageClick(object sender, RoutedEventArgs e)
+        {
+            Loc.SetLanguage(Loc.IsChinese ? Loc.English : Loc.Chinese);
+        }
+
+        private void UpdateLangButton()
+        {
+            // 按钮显示"点了会切到哪种语言"，中文环境下不需要再翻译
+            _lang.Content = Loc.IsChinese ? "English" : "中文";
+        }
+
+        private void OnLanguageChanged(object sender, EventArgs e)
+        {
+            UpdateLangButton();
+            _summary = null;
+            ApplySummary();
+            if (_file == null)
+                _info.Text = Loc.T("Str.Status.NoFile");
+            else
+                RefreshInfo();
+            if (_record != null)
+                ShowRecord(_record.Seq);
+            else
+                _recordHead.Text = Loc.T("Str.Browse.Fields");
+            var entry = _historyList.SelectedItem as HistoryEntry;
+            if (entry != null)
+            {
+                ShowHistoryEntry(entry);
+            }
+            else
+            {
+                _historySummary.Text = Loc.T("Str.History.Placeholder");
+                _historyTypes.ItemsSource = null;
+            }
+            if (_comparePair != null)
+                RenderCompare();
+            else
+                _cmpSummary.Text = Loc.T(_cmpLeft != null && ReferenceEquals(_cmpLeft, _cmpRight) ? "Str.Compare.SameSide" : "Str.Compare.Placeholder");
+            UpdateCompareLabels();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            Loc.LanguageChanged -= OnLanguageChanged;
+            if (_file != null)
+                _file.Close();
+            base.OnClosed(e);
+        }
+
+        // ---------------- 汇总 ----------------
+
+        private void ApplySummary()
+        {
+            bool hasFile = _file != null;
+            _summaryEmpty.Visibility = hasFile ? Visibility.Collapsed : Visibility.Visible;
+            _summaryScroll.Visibility = hasFile ? Visibility.Visible : Visibility.Collapsed;
+            if (!hasFile)
+            {
+                _summarySections.ItemsSource = null;
+                _kpiSize.Text = "";
+                _kpiRecords.Text = "";
+                _kpiTypes.Text = "";
+                _kpiDuts.Text = "";
+                _kpiYield.Text = "";
+                _kpiScan.Text = "";
+                _kpiEndian.Text = "";
+                return;
+            }
+
+            if (_summary == null)
+                _summary = StdfSummary.Build(_file);
+
+            // 先清空再赋值：Title/Name 是构建时定稿的文字，换语言要靠重建模型
+            _summarySections.ItemsSource = null;
+            _summarySections.ItemsSource = _summary.Sections;
+            _kpiSize.Text = N(_summary.FileLength) + " B";
+            _kpiRecords.Text = N(_summary.RecordCount);
+            _kpiTypes.Text = _summary.TypeCount.ToString(CultureInfo.InvariantCulture);
+            _kpiDuts.Text = _summary.DutCount.ToString(CultureInfo.InvariantCulture);
+            _kpiYield.Text = _summary.YieldPercent < 0
+                ? Loc.T("Str.Word.Na")
+                : _summary.YieldPercent.ToString("F2", CultureInfo.InvariantCulture) + "%";
+            _kpiScan.Text = _summary.ScanMs.ToString("F0", CultureInfo.InvariantCulture) + " ms";
+            _kpiEndian.Text = EndianWord(_summary.BigEndian);
+        }
+
         // ---------------- 历史解析记录 ----------------
 
         private void OnHistorySelected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -176,15 +295,24 @@ namespace StdfViewer
             var entry = _historyList.SelectedItem as HistoryEntry;
             if (entry == null)
                 return;
-            _historySummary.Text = entry.Path
-                + "   " + N(entry.Size) + " B"
-                + "   CPU_TYPE=" + entry.CpuType + " STDF_VER=" + entry.StdfVer
-                + (entry.BigEndian ? " (big-endian)" : " (little-endian)")
-                + "   records=" + N(entry.Records)
-                + "   types=" + entry.TypeCount
-                + "   scan=" + entry.ScanMs.ToString("F0", CultureInfo.InvariantCulture) + "ms"
-                + "   parsed=" + entry.ParsedAt
-                + (entry.Note.Length > 0 ? "   NOTE: " + entry.Note : "");
+            ShowHistoryEntry(entry);
+        }
+
+        private void ShowHistoryEntry(HistoryEntry entry)
+        {
+            var text = new StringBuilder();
+            text.Append(entry.Path)
+                .Append("   ").Append(N(entry.Size)).Append(" B")
+                .Append("   CPU_TYPE=").Append(entry.CpuType.ToString(CultureInfo.InvariantCulture))
+                .Append(" STDF_VER=").Append(entry.StdfVer.ToString(CultureInfo.InvariantCulture))
+                .Append("   ").Append(EndianWord(entry.BigEndian))
+                .Append("   ").Append(Loc.T("Str.Lbl.Records")).Append('=').Append(N(entry.Records))
+                .Append("   ").Append(Loc.T("Str.Lbl.Types")).Append('=').Append(entry.TypeCount.ToString(CultureInfo.InvariantCulture))
+                .Append("   ").Append(Loc.T("Str.Lbl.Scan")).Append('=').Append(entry.ScanMs.ToString("F0", CultureInfo.InvariantCulture)).Append("ms")
+                .Append("   ").Append(Loc.T("Str.Lbl.Parsed")).Append('=').Append(entry.ParsedAt);
+            if (entry.Note.Length > 0)
+                text.Append("   ").Append(Loc.T("Str.Lbl.Note")).Append(": ").Append(entry.Note);
+            _historySummary.Text = text.ToString();
             _historyTypes.ItemsSource = entry.Types;
         }
 
@@ -193,12 +321,12 @@ namespace StdfViewer
             var entry = _historyList.SelectedItem as HistoryEntry;
             if (entry == null)
             {
-                _historySummary.Text = "先在左侧列表里选中一条历史记录，再点 Delete。";
+                _historySummary.Text = Loc.T("Str.History.DeleteEmpty");
                 return;
             }
             MessageBoxResult answer = MessageBox.Show(this,
-                "Remove this entry from history?\r\nThe .std file on disk is NOT deleted.\r\n\r\n" + entry.Path,
-                "Delete history entry", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+                Loc.T("Str.History.DeleteConfirm", entry.Path),
+                Loc.T("Str.History.DeleteTitle"), MessageBoxButton.OKCancel, MessageBoxImage.Question);
             if (answer != MessageBoxResult.OK)
                 return;
 
@@ -209,7 +337,7 @@ namespace StdfViewer
             }
             else
             {
-                _historySummary.Text = "选择左侧一条历史记录查看上次解析结果。";
+                _historySummary.Text = Loc.T("Str.History.Placeholder");
                 _historyTypes.ItemsSource = null;
             }
         }
@@ -231,7 +359,7 @@ namespace StdfViewer
             var entry = _cmpList.SelectedItem as HistoryEntry;
             if (entry == null)
             {
-                _cmpSummary.Text = "先在左侧列表里选中一条历史记录，再点 Set as left / Set as right。";
+                _cmpSummary.Text = Loc.T("Str.Compare.SelectFirst");
                 return;
             }
             if (left)
@@ -248,14 +376,14 @@ namespace StdfViewer
             bool same = _cmpLeft != null && ReferenceEquals(_cmpLeft, _cmpRight);
             _cmpCompare.IsEnabled = _cmpLeft != null && _cmpRight != null && !same;
             if (same)
-                _cmpSummary.Text = "左右两侧不能是同一条历史记录，请换一条。";
+                _cmpSummary.Text = Loc.T("Str.Compare.SameSide");
         }
 
         private static string Describe(HistoryEntry entry)
         {
             if (entry == null)
-                return "(none)";
-            return entry.FileName + "\r\n" + entry.ParsedAt + "   " + N(entry.Records) + " records";
+                return Loc.T("Str.Compare.None");
+            return entry.FileName + "\r\n" + entry.ParsedAt + "   " + N(entry.Records) + " " + Loc.T("Str.Lbl.Records");
         }
 
         private async void OnCompareClick(object sender, RoutedEventArgs e)
@@ -264,7 +392,7 @@ namespace StdfViewer
                 return;
 
             _cmpCompare.IsEnabled = false;
-            _cmpSummary.Text = "comparing ...";
+            _cmpSummary.Text = Loc.T("Str.Compare.Comparing");
             _cmpTypes.ItemsSource = null;
             _cmpStruct.Text = "";
             try
@@ -274,50 +402,60 @@ namespace StdfViewer
                 // 两个文件都还在磁盘上就重新扫描（顺带拿到记录序列，可做结构对比）；
                 // 否则退回历史快照，只做类型层与出现顺序对比
                 bool onDisk = File.Exists(leftPath) && File.Exists(rightPath);
-                ComparePair pair;
                 if (onDisk)
                 {
-                    pair = await Task.Run(delegate { return LoadPair(leftPath, rightPath); });
+                    _comparePair = await Task.Run(delegate { return LoadPair(leftPath, rightPath); });
                 }
                 else
                 {
-                    pair = new ComparePair
+                    _comparePair = new ComparePair
                     {
                         Left = new CompareInput { Entry = _cmpLeft, Runs = null },
                         Right = new CompareInput { Entry = _cmpRight, Runs = null },
                     };
                 }
-
-                List<CompareTypeRow> rows = StdfComparer.CompareTypes(pair.Left.Entry.Types, pair.Right.Entry.Types);
-                _cmpTypes.ItemsSource = rows;
-
-                int onlyLeft = 0;
-                int onlyRight = 0;
-                foreach (CompareTypeRow row in rows)
-                {
-                    if (row.Status == StdfComparer.OnlyLeft)
-                        onlyLeft++;
-                    else if (row.Status == StdfComparer.OnlyRight)
-                        onlyRight++;
-                }
-
-                long delta = (long)pair.Right.Entry.Records - pair.Left.Entry.Records;
-                _cmpSummary.Text = "left: " + pair.Left.Entry.FileName
-                    + "   right: " + pair.Right.Entry.FileName
-                    + "   [" + (onDisk ? "rescanned from disk" : "history snapshot, file not on disk") + "]"
-                    + "\r\nrecords " + N(pair.Left.Entry.Records) + " -> " + N(pair.Right.Entry.Records)
-                    + "   (" + (delta >= 0 ? "+" : "") + N(delta) + ")"
-                    + "   types only left: " + onlyLeft.ToString(CultureInfo.InvariantCulture)
-                    + "   only right: " + onlyRight.ToString(CultureInfo.InvariantCulture)
-                    + (pair.Left.Entry.Note.Length > 0 ? "   left NOTE: " + pair.Left.Entry.Note : "")
-                    + (pair.Right.Entry.Note.Length > 0 ? "   right NOTE: " + pair.Right.Entry.Note : "");
-
-                _cmpStruct.Text = BuildStructureReport(pair, onDisk);
+                _compareOnDisk = onDisk;
+                RenderCompare();
             }
             finally
             {
                 UpdateCompareLabels();
             }
+        }
+
+        private void RenderCompare()
+        {
+            ComparePair pair = _comparePair;
+            List<CompareTypeRow> rows = StdfComparer.CompareTypes(pair.Left.Entry.Types, pair.Right.Entry.Types);
+            _cmpTypes.ItemsSource = rows;
+
+            int onlyLeft = 0;
+            int onlyRight = 0;
+            foreach (CompareTypeRow row in rows)
+            {
+                if (row.Status == StdfComparer.OnlyLeft)
+                    onlyLeft++;
+                else if (row.Status == StdfComparer.OnlyRight)
+                    onlyRight++;
+            }
+
+            long delta = (long)pair.Right.Entry.Records - pair.Left.Entry.Records;
+            string signed = (delta >= 0 ? "+" : "") + N(delta);
+
+            var text = new StringBuilder();
+            text.Append(Loc.T("Str.Compare.SideLine", pair.Left.Entry.FileName, pair.Right.Entry.FileName,
+                Loc.T(_compareOnDisk ? "Str.Compare.Rescanned" : "Str.Compare.Snapshot")));
+            text.AppendLine();
+            text.Append(Loc.T("Str.Compare.RecordsDelta", N(pair.Left.Entry.Records), N(pair.Right.Entry.Records), signed))
+                .Append("   ").Append(Loc.T("Str.Compare.OnlyLeftCount", onlyLeft.ToString(CultureInfo.InvariantCulture)))
+                .Append("   ").Append(Loc.T("Str.Compare.OnlyRightCount", onlyRight.ToString(CultureInfo.InvariantCulture)));
+            if (pair.Left.Entry.Note.Length > 0)
+                text.Append("   ").Append(Loc.T("Str.Compare.LeftNote", pair.Left.Entry.Note));
+            if (pair.Right.Entry.Note.Length > 0)
+                text.Append("   ").Append(Loc.T("Str.Compare.RightNote", pair.Right.Entry.Note));
+            _cmpSummary.Text = text.ToString();
+
+            _cmpStruct.Text = BuildStructureReport(pair, _compareOnDisk);
         }
 
         private static ComparePair LoadPair(string leftPath, string rightPath)
@@ -345,41 +483,46 @@ namespace StdfViewer
 
             if (!onDisk || pair.Left.Runs == null || pair.Right.Runs == null)
             {
-                sb.AppendLine("Structure (RLE segments): unavailable — needs both files on disk.");
-                sb.AppendLine("history snapshots keep per-type totals only, not the record sequence.");
+                sb.AppendLine(Loc.T("Str.Compare.StructUnavailable"));
+                sb.AppendLine(Loc.T("Str.Compare.StructHistoryOnly"));
                 return sb.ToString();
             }
 
             StructureCompare c = StdfComparer.CompareStructure(pair.Left.Runs, pair.Right.Runs);
             if (c.Identical)
             {
-                sb.AppendLine("Structure: identical (" + N(c.LeftSegments) + " segments)");
+                sb.AppendLine(Loc.T("Str.Compare.StructIdentical", N(c.LeftSegments)));
                 sb.AppendLine();
-                sb.AppendLine("left : " + StdfComparer.RunsText(pair.Left.Runs, 0, 60));
+                sb.AppendLine(Loc.T("Str.Compare.LeftSide") + " : " + SegmentText(StdfComparer.RunsText(pair.Left.Runs, 0, 60)));
                 return sb.ToString();
             }
 
-            sb.AppendLine("Structure: differs");
-            sb.AppendLine("  segments       left " + N(c.LeftSegments) + "   right " + N(c.RightSegments));
-            sb.AppendLine("  common prefix  " + N(c.CommonPrefix) + " segments");
-            sb.AppendLine("  common suffix  " + N(c.CommonSuffix) + " segments");
-            sb.AppendLine("  diff window    left " + N(c.LeftWindow) + "   right " + N(c.RightWindow) + " segments");
+            sb.AppendLine(Loc.T("Str.Compare.StructDiffers"));
+            sb.AppendLine("  " + Loc.T("Str.Compare.Segments") + "         " + Loc.T("Str.Compare.LeftSide") + " " + N(c.LeftSegments)
+                + "   " + Loc.T("Str.Compare.RightSide") + " " + N(c.RightSegments));
+            sb.AppendLine("  " + Loc.T("Str.Compare.CommonPrefix") + "  " + N(c.CommonPrefix) + " " + Loc.T("Str.Compare.Segments"));
+            sb.AppendLine("  " + Loc.T("Str.Compare.CommonSuffix") + "  " + N(c.CommonSuffix) + " " + Loc.T("Str.Compare.Segments"));
+            sb.AppendLine("  " + Loc.T("Str.Compare.DiffWindow") + "    " + Loc.T("Str.Compare.LeftSide") + " " + N(c.LeftWindow)
+                + "   " + Loc.T("Str.Compare.RightSide") + " " + N(c.RightWindow) + " " + Loc.T("Str.Compare.Segments"));
             sb.AppendLine();
-            sb.AppendLine("left  window : " + (c.LeftWindowText.Length == 0 ? "(none)" : c.LeftWindowText));
-            sb.AppendLine("right window : " + (c.RightWindowText.Length == 0 ? "(none)" : c.RightWindowText));
+            sb.AppendLine(Loc.T("Str.Compare.LeftWindow") + "  : " + SegmentText(c.LeftWindowText));
+            sb.AppendLine(Loc.T("Str.Compare.RightWindow") + " : " + SegmentText(c.RightWindowText));
             return sb.ToString();
+        }
+
+        private static string SegmentText(string text)
+        {
+            return string.IsNullOrEmpty(text) ? Loc.T("Str.Compare.NoSegment") : text;
+        }
+
+        private static string EndianWord(bool bigEndian)
+        {
+            return Loc.T(bigEndian ? "Str.Word.BigEndian" : "Str.Word.LittleEndian");
         }
 
         private static string N(long value)
         {
             return value.ToString("N0", CultureInfo.InvariantCulture);
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            if (_file != null)
-                _file.Close();
-            base.OnClosed(e);
         }
     }
 }

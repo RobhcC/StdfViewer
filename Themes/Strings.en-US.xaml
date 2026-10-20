@@ -1,0 +1,147 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- Record names (MIR, PTR, ...) and field names (LOT_ID, ...) stay English on purpose. -->
+
+    <sys:String x:Key="Str.Tb.Open">Open STDF File</sys:String>
+    <sys:String x:Key="Str.Tb.AllTypes">All types</sys:String>
+    <sys:String x:Key="Str.Tb.JumpTip">Type the # shown in the record list, then press Enter</sys:String>
+    <sys:String x:Key="Str.Tb.LangTip">Switch language</sys:String>
+
+    <sys:String x:Key="Str.Tab.Summary">Summary</sys:String>
+    <sys:String x:Key="Str.Tab.Browse">Browse</sys:String>
+    <sys:String x:Key="Str.Tab.History">History</sys:String>
+    <sys:String x:Key="Str.Tab.Compare">Compare</sys:String>
+
+    <sys:String x:Key="Str.Browse.Types">Record types in file</sys:String>
+    <sys:String x:Key="Str.Browse.Records">Records (file order)</sys:String>
+    <sys:String x:Key="Str.Browse.Fields">Fields</sys:String>
+
+    <sys:String x:Key="Str.Col.Type">Type</sys:String>
+    <sys:String x:Key="Str.Col.Count">Count</sys:String>
+    <sys:String x:Key="Str.Col.Bytes">Bytes</sys:String>
+    <sys:String x:Key="Str.Col.First">First</sys:String>
+    <sys:String x:Key="Str.Col.Offset">Offset</sys:String>
+    <sys:String x:Key="Str.Col.Field">Field</sys:String>
+    <sys:String x:Key="Str.Col.StdfType">STDF type</sys:String>
+    <sys:String x:Key="Str.Col.Value">Value</sys:String>
+    <sys:String x:Key="Str.Col.RawBytes">Raw bytes</sys:String>
+    <sys:String x:Key="Str.Col.Status">Status</sys:String>
+    <sys:String x:Key="Str.Col.File">File</sys:String>
+    <sys:String x:Key="Str.Col.Parsed">Parsed</sys:String>
+    <sys:String x:Key="Str.Col.Size">Size</sys:String>
+    <sys:String x:Key="Str.Col.Records">Records</sys:String>
+    <sys:String x:Key="Str.Col.Types">Types</sys:String>
+    <sys:String x:Key="Str.Col.Name">Name</sys:String>
+    <sys:String x:Key="Str.Col.Left">Left</sys:String>
+    <sys:String x:Key="Str.Col.Right">Right</sys:String>
+    <sys:String x:Key="Str.Col.Delta">Delta</sys:String>
+
+    <sys:String x:Key="Str.History.ParsedFiles">Parsed files</sys:String>
+    <sys:String x:Key="Str.History.Delete">Delete</sys:String>
+    <sys:String x:Key="Str.History.LastResult">Last parse result</sys:String>
+    <sys:String x:Key="Str.History.Placeholder">Select an entry on the left to see its parse result.</sys:String>
+    <sys:String x:Key="Str.History.DeleteEmpty">Select a history entry on the left first, then click Delete.</sys:String>
+    <sys:String x:Key="Str.History.DeleteTitle">Delete history entry</sys:String>
+    <sys:String x:Key="Str.History.DeleteConfirm">Remove this entry from history?&#x0A;The .std file on disk is NOT deleted.&#x0A;&#x0A;{0}</sys:String>
+
+    <sys:String x:Key="Str.Compare.Pick">Pick two parsed files</sys:String>
+    <sys:String x:Key="Str.Compare.Left">Left:</sys:String>
+    <sys:String x:Key="Str.Compare.Right">Right:</sys:String>
+    <sys:String x:Key="Str.Compare.None">(none)</sys:String>
+    <sys:String x:Key="Str.Compare.SetLeft">Set as left</sys:String>
+    <sys:String x:Key="Str.Compare.SetRight">Set as right</sys:String>
+    <sys:String x:Key="Str.Compare.Run">Compare</sys:String>
+    <sys:String x:Key="Str.Compare.TypeDiff">Type differences</sys:String>
+    <sys:String x:Key="Str.Compare.Placeholder">Pick a history entry for both sides, then click Compare.</sys:String>
+    <sys:String x:Key="Str.Compare.SelectFirst">Select a history entry on the left first, then click Set as left / Set as right.</sys:String>
+    <sys:String x:Key="Str.Compare.SameSide">Left and right cannot be the same history entry.</sys:String>
+    <sys:String x:Key="Str.Compare.Comparing">comparing ...</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyLeft">only left</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyRight">only right</sys:String>
+    <sys:String x:Key="Str.Compare.Struct">Record structure</sys:String>
+    <sys:String x:Key="Str.Compare.Rescanned">rescanned from disk</sys:String>
+    <sys:String x:Key="Str.Compare.Snapshot">history snapshot, file not on disk</sys:String>
+    <sys:String x:Key="Str.Compare.SideLine">left: {0}   right: {1}   [{2}]</sys:String>
+    <sys:String x:Key="Str.Compare.RecordsDelta">records {0} -> {1}   ({2})</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyLeftCount">types only left: {0}</sys:String>
+    <sys:String x:Key="Str.Compare.OnlyRightCount">only right: {0}</sys:String>
+    <sys:String x:Key="Str.Compare.LeftNote">left NOTE: {0}</sys:String>
+    <sys:String x:Key="Str.Compare.RightNote">right NOTE: {0}</sys:String>
+    <sys:String x:Key="Str.Compare.StructUnavailable">Structure (RLE segments): unavailable - needs both files on disk.</sys:String>
+    <sys:String x:Key="Str.Compare.StructHistoryOnly">history snapshots keep per-type totals only, not the record sequence.</sys:String>
+    <sys:String x:Key="Str.Compare.StructIdentical">Structure: identical ({0} segments)</sys:String>
+    <sys:String x:Key="Str.Compare.StructDiffers">Structure: differs</sys:String>
+    <sys:String x:Key="Str.Compare.Segments">segments</sys:String>
+    <sys:String x:Key="Str.Compare.CommonPrefix">common prefix</sys:String>
+    <sys:String x:Key="Str.Compare.CommonSuffix">common suffix</sys:String>
+    <sys:String x:Key="Str.Compare.DiffWindow">diff window</sys:String>
+    <sys:String x:Key="Str.Compare.LeftWindow">left window</sys:String>
+    <sys:String x:Key="Str.Compare.RightWindow">right window</sys:String>
+    <sys:String x:Key="Str.Compare.LeftSide">left</sys:String>
+    <sys:String x:Key="Str.Compare.RightSide">right</sys:String>
+    <sys:String x:Key="Str.Compare.NoSegment">(none)</sys:String>
+    <sys:String x:Key="Str.Compare.OrderDiffers">type order: differs (left {0} types, right {1} types); first difference at #{2}: left {3}, right {4}</sys:String>
+    <sys:String x:Key="Str.Compare.OrderExtra">type order: same up to #{0}, {1} has {2} more types than {3}</sys:String>
+    <sys:String x:Key="Str.Compare.OrderSame">type order: identical ({0} types)</sys:String>
+
+    <sys:String x:Key="Str.Summary.Empty">Open a file to see its summary.</sys:String>
+    <sys:String x:Key="Str.Kpi.Size">Size</sys:String>
+    <sys:String x:Key="Str.Kpi.Records">Records</sys:String>
+    <sys:String x:Key="Str.Kpi.Types">Types</sys:String>
+    <sys:String x:Key="Str.Kpi.Duts">DUTs</sys:String>
+    <sys:String x:Key="Str.Kpi.Yield">Yield</sys:String>
+    <sys:String x:Key="Str.Kpi.Scan">Scan</sys:String>
+    <sys:String x:Key="Str.Kpi.Endian">Byte order</sys:String>
+    <sys:String x:Key="Str.Summary.File">File</sys:String>
+    <sys:String x:Key="Str.Summary.Counts">Counts</sys:String>
+    <sys:String x:Key="Str.File.Name">File name</sys:String>
+    <sys:String x:Key="Str.File.Path">Path</sys:String>
+    <sys:String x:Key="Str.File.Size">Size</sys:String>
+    <sys:String x:Key="Str.File.LastWrite">Last write</sys:String>
+    <sys:String x:Key="Str.File.ScanTime">Scan time</sys:String>
+    <sys:String x:Key="Str.File.Endian">Byte order</sys:String>
+    <sys:String x:Key="Str.File.Note">Scan note</sys:String>
+    <sys:String x:Key="Str.Count.Records">Records</sys:String>
+    <sys:String x:Key="Str.Count.Types">Types</sys:String>
+    <sys:String x:Key="Str.Word.LittleEndian">little-endian</sys:String>
+    <sys:String x:Key="Str.Word.BigEndian">big-endian</sys:String>
+    <sys:String x:Key="Str.Word.Na">n/a</sys:String>
+
+    <sys:String x:Key="Str.Status.NoFile">No file opened</sys:String>
+    <sys:String x:Key="Str.Status.Scanning">scanning {0} ...</sys:String>
+    <sys:String x:Key="Str.Status.ListCapped">  (list capped at {0}, pick a type to narrow)</sys:String>
+    <sys:String x:Key="Str.Lbl.Records">records</sys:String>
+    <sys:String x:Key="Str.Lbl.Types">types</sys:String>
+    <sys:String x:Key="Str.Lbl.Scan">scan</sys:String>
+    <sys:String x:Key="Str.Lbl.Listed">listed</sys:String>
+    <sys:String x:Key="Str.Lbl.Parsed">parsed</sys:String>
+    <sys:String x:Key="Str.Lbl.Note">NOTE</sys:String>
+    <sys:String x:Key="Str.Lbl.History">HISTORY</sys:String>
+    <sys:String x:Key="Str.Lbl.Settings">SETTINGS</sys:String>
+
+    <sys:String x:Key="Str.Dec.Empty">(empty)</sys:String>
+    <sys:String x:Key="Str.Dec.NoLayout">(no layout)</sys:String>
+    <sys:String x:Key="Str.Dec.Unclaimed">(unclaimed)</sys:String>
+    <sys:String x:Key="Str.Dec.NotSet">(not set)</sys:String>
+    <sys:String x:Key="Str.Dec.OutOfRange">(out of range)</sys:String>
+    <sys:String x:Key="Str.Dec.UnknownRecord">unknown record type {0}</sys:String>
+    <sys:String x:Key="Str.Dec.Gap">layout ended with {0} bytes left: the field table may be incomplete</sys:String>
+    <sys:String x:Key="Str.Dec.OptionalOmitted">{0} optional trailing fields not present</sys:String>
+    <sys:String x:Key="Str.St.Ok">ok</sys:String>
+    <sys:String x:Key="Str.St.Header">header</sys:String>
+    <sys:String x:Key="Str.St.Omitted">omitted</sys:String>
+    <sys:String x:Key="Str.St.Truncated">truncated</sys:String>
+    <sys:String x:Key="Str.St.LayoutGap">layout gap</sys:String>
+    <sys:String x:Key="Str.St.UnknownType">unknown type</sys:String>
+
+    <sys:String x:Key="Str.Note.BadTail">incomplete record at end: REC_LEN={0}, only {1} bytes left</sys:String>
+    <sys:String x:Key="Str.Note.BadHeader">cannot parse record header at offset {0} (REC_LEN={1}); scan stopped there</sys:String>
+    <sys:String x:Key="Str.Note.Trailing">{0} trailing bytes at end of file, less than one record header</sys:String>
+    <sys:String x:Key="Str.Note.Endian">CPU_TYPE={0} disagrees with the byte order detected from record headers; decoding with the detected order</sys:String>
+    <sys:String x:Key="Str.Store.LoadFailed">failed to read history.json: {0}</sys:String>
+    <sys:String x:Key="Str.Store.NotWritable">{0} is not writable; history not saved: {1}</sys:String>
+    <sys:String x:Key="Str.Dlg.OpenTitle">Open STDF file</sys:String>
+    <sys:String x:Key="Str.Dlg.OpenFilter">STDF files (*.std)|*.std|All files (*.*)|*.*</sys:String>
+</ResourceDictionary>

@@ -5,6 +5,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/StdfViewer;component/Themes/Controls.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/StdfViewer;component/Themes/Strings.en-US.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
