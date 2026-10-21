@@ -109,6 +109,7 @@
     <sys:String x:Key="Str.Wafer.Hover">X={0}   Y={1}   HARD_BIN={2}   SITE={3}</sys:String>
     <sys:String x:Key="Str.Wafer.RetestMark">retests x{0}</sys:String>
     <sys:String x:Key="Str.Wafer.BadExtent">Coordinate span is implausible ({0} x {1}); nothing drawn. Check PRR X_COORD / Y_COORD.</sys:String>
+    <sys:String x:Key="Str.Wafer.ZoomHint">Wheel zooms at the cursor; drag to pan; double-click to reset</sys:String>
 
     <sys:String x:Key="Str.Summary.Empty">Open a file to see its summary.</sys:String>
     <sys:String x:Key="Str.Kpi.Size">Size</sys:String>

@@ -12,16 +12,8 @@ namespace StdfViewer
         private static readonly SolidColorBrush WaferFill = Frozen(0xF8, 0xFA, 0xFC);
         private static readonly SolidColorBrush CirclePenBrush = Frozen(0xE3, 0xE7, 0xEC);
         private static readonly SolidColorBrush MutedBrush = Frozen(0x6B, 0x72, 0x80);
-        private static readonly SolidColorBrush AxisBrush = Frozen(0x9A, 0xA3, 0xAF);
+        private static readonly SolidColorBrush LabelFill = Frozen(0xFF, 0xFF, 0xFF);
         private static readonly SolidColorBrush HoverBrush = Frozen(0x2F, 0x6F, 0xED);
-        private static readonly SolidColorBrush BinZeroBrush = Frozen(0xC7, 0xCE, 0xD8);
-        private static readonly SolidColorBrush[] BinBrushes =
-        {
-            Frozen(0x2F, 0x9E, 0x5B), Frozen(0xD9, 0x53, 0x4F), Frozen(0x3B, 0x7B, 0xD9),
-            Frozen(0xE0, 0xA0, 0x30), Frozen(0x8A, 0x63, 0xD2), Frozen(0x2A, 0xA7, 0xA0),
-            Frozen(0xD2, 0x67, 0x9B), Frozen(0x8A, 0x6D, 0x3B), Frozen(0x6C, 0x7A, 0x89),
-            Frozen(0xC9, 0xA2, 0x27), Frozen(0x4F, 0x8A, 0x5B), Frozen(0xA3, 0x5B, 0xA3),
-        };
 
         private readonly List<KeyValuePair<SolidColorBrush, StreamGeometry>> _shapes =
             new List<KeyValuePair<SolidColorBrush, StreamGeometry>>();
@@ -41,31 +33,89 @@ namespace StdfViewer
         private Point _circleCenter;
         private double _circleRadius;
         private WaferDie _hovered;
+        private double _zoom = 1;
+        private double _panX;
+        private double _panY;
+        private bool _dragging;
+        private Point _dragStart;
+        private double _dragPanX;
+        private double _dragPanY;
 
-        public WaferMapWafer Wafer { get { return _wafer; } }
-        public WaferDie HoveredDie { get { return _hovered; } }
-        public bool TooLarge { get { return _tooLarge; } }
-
-        public event EventHandler HoverChanged;
-
-        public static SolidColorBrush BrushForBin(int bin)
+        public WaferMapView()
         {
-            return bin <= 0 ? BinZeroBrush : BinBrushes[(bin - 1) % BinBrushes.Length];
+            ClipToBounds = true;
         }
 
-        public void SetWafer(WaferMapWafer wafer, char notch)
+        public static readonly DependencyProperty WaferProperty = DependencyProperty.Register(
+            "Wafer", typeof(WaferMapWafer), typeof(WaferMapView),
+            new FrameworkPropertyMetadata(null, OnWaferChanged));
+
+        public static readonly DependencyProperty NotchProperty = DependencyProperty.Register(
+            "Notch", typeof(char), typeof(WaferMapView),
+            new FrameworkPropertyMetadata('D', OnNotchChanged));
+
+        public static readonly DependencyProperty HoveredDieProperty = DependencyProperty.Register(
+            "HoveredDie", typeof(WaferDie), typeof(WaferMapView),
+            new FrameworkPropertyMetadata(null, OnHoveredDieChanged));
+
+        public WaferMapWafer Wafer
         {
-            _wafer = wafer;
-            _notch = NormalizeNotch(notch);
-            _tooLarge = wafer != null && IsTooLarge(wafer);
-            _hovered = null;
-            _cellWidth = 0;
-            _cellHeight = 0;
-            _layoutWidth = -1;
-            _layoutHeight = -1;
-            _shapes.Clear();
+            get { return (WaferMapWafer)GetValue(WaferProperty); }
+            set { SetValue(WaferProperty, value); }
+        }
+
+        public char Notch
+        {
+            get { return (char)GetValue(NotchProperty); }
+            set { SetValue(NotchProperty, value); }
+        }
+
+        public WaferDie HoveredDie
+        {
+            get { return (WaferDie)GetValue(HoveredDieProperty); }
+            set { SetValue(HoveredDieProperty, value); }
+        }
+
+        public bool TooLarge { get { return _tooLarge; } }
+
+        private static void OnWaferChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var view = (WaferMapView)d;
+            view._wafer = (WaferMapWafer)e.NewValue;
+            view._tooLarge = view._wafer != null && IsTooLarge(view._wafer);
+            view._cellWidth = 0;
+            view._cellHeight = 0;
+            view._layoutWidth = -1;
+            view._layoutHeight = -1;
+            view._zoom = 1;
+            view._panX = 0;
+            view._panY = 0;
+            view._dragging = false;
+            view._shapes.Clear();
+            view.SetCurrentValue(HoveredDieProperty, null);
+            view.InvalidateVisual();
+        }
+
+        private static void OnNotchChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var view = (WaferMapView)d;
+            view._notch = NormalizeNotch((char)e.NewValue);
+            view.InvalidateVisual();
+        }
+
+        private static void OnHoveredDieChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var view = (WaferMapView)d;
+            view._hovered = (WaferDie)e.NewValue;
+            view.InvalidateVisual();
+        }
+
+        public void ResetView()
+        {
+            _zoom = 1;
+            _panX = 0;
+            _panY = 0;
             InvalidateVisual();
-            HoverChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public WaferDie HitTest(Point point)
@@ -75,8 +125,9 @@ namespace StdfViewer
             EnsureLayout();
             if (_cellWidth == 0 || _cellHeight == 0 || _tooLarge)
                 return null;
-            int col = (int)Math.Floor((point.X - _gridLeft) / _cellWidth);
-            int row = (int)Math.Floor((point.Y - _gridTop) / _cellHeight);
+            Point basePoint = ScreenToBase(point);
+            int col = (int)Math.Floor((basePoint.X - _gridLeft) / _cellWidth);
+            int row = (int)Math.Floor((basePoint.Y - _gridTop) / _cellHeight);
             if (col < 0 || col >= _cols || row < 0 || row >= _rows)
                 return null;
             return _wafer.GetDie(_wafer.MinX + col, _wafer.MaxY - row);
@@ -91,39 +142,110 @@ namespace StdfViewer
             if (_cellWidth == 0 || _cellHeight == 0 || _tooLarge)
                 return;
 
+            dc.PushTransform(new MatrixTransform(ViewMatrix()));
             dc.DrawEllipse(WaferFill, new Pen(CirclePenBrush, 1), _circleCenter, _circleRadius, _circleRadius);
             foreach (KeyValuePair<SolidColorBrush, StreamGeometry> shape in _shapes)
                 dc.DrawGeometry(shape.Key, null, shape.Value);
             DrawNotch(dc);
-            DrawAxes(dc);
             if (_hovered != null)
             {
                 Rect rect = DieRect(_hovered);
                 dc.DrawRectangle(null, new Pen(HoverBrush, 1.5), new Rect(rect.X, rect.Y, _cellWidth, _cellHeight));
             }
+            dc.Pop();
+            DrawAxes(dc);
+        }
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            if (_wafer == null || _tooLarge || _cellWidth == 0)
+                return;
+            double zoom = Math.Max(1, Math.Min(20, _zoom * Math.Pow(1.2, e.Delta / 120.0)));
+            if (zoom == _zoom)
+            {
+                e.Handled = true;
+                return;
+            }
+            Point mouse = e.GetPosition(this);
+            Point basePoint = ScreenToBase(mouse);
+            if (zoom <= 1)
+            {
+                _panX = 0;
+                _panY = 0;
+            }
+            else
+            {
+                _panX = mouse.X - ActualWidth / 2 - (basePoint.X - ActualWidth / 2) * zoom;
+                _panY = mouse.Y - ActualHeight / 2 - (basePoint.Y - ActualHeight / 2) * zoom;
+            }
+            _zoom = zoom;
+            InvalidateVisual();
+            e.Handled = true;
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (_wafer == null || _tooLarge || _cellWidth == 0)
+                return;
+            if (e.ClickCount == 2)
+            {
+                _dragging = false;
+                ResetView();
+                e.Handled = true;
+                return;
+            }
+            _dragging = true;
+            _dragStart = e.GetPosition(this);
+            _dragPanX = _panX;
+            _dragPanY = _panY;
+            CaptureMouse();
+            Cursor = Cursors.Hand;
+            e.Handled = true;
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+            if (!_dragging)
+                return;
+            _dragging = false;
+            ReleaseMouseCapture();
+            Cursor = Cursors.Arrow;
+            e.Handled = true;
+        }
+
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+            _dragging = false;
+            Cursor = Cursors.Arrow;
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
+            if (_dragging)
+            {
+                Point point = e.GetPosition(this);
+                _panX = _dragPanX + point.X - _dragStart.X;
+                _panY = _dragPanY + point.Y - _dragStart.Y;
+                if (_hovered != null)
+                    SetCurrentValue(HoveredDieProperty, null);
+                InvalidateVisual();
+                return;
+            }
             WaferDie die = HitTest(e.GetPosition(this));
             if (!ReferenceEquals(die, _hovered))
-            {
-                _hovered = die;
-                InvalidateVisual();
-                HoverChanged?.Invoke(this, EventArgs.Empty);
-            }
+                SetCurrentValue(HoveredDieProperty, die);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
             base.OnMouseLeave(e);
             if (_hovered != null)
-            {
-                _hovered = null;
-                InvalidateVisual();
-                HoverChanged?.Invoke(this, EventArgs.Empty);
-            }
+                SetCurrentValue(HoveredDieProperty, null);
         }
 
         private void EnsureLayout()
@@ -183,8 +305,24 @@ namespace StdfViewer
                     }
                 }
                 geometry.Freeze();
-                _shapes.Add(new KeyValuePair<SolidColorBrush, StreamGeometry>(BrushForBin(bin), geometry));
+                _shapes.Add(new KeyValuePair<SolidColorBrush, StreamGeometry>(BinPalette.BrushForBin(bin), geometry));
             }
+        }
+
+        private Matrix ViewMatrix()
+        {
+            double centerX = ActualWidth / 2;
+            double centerY = ActualHeight / 2;
+            return new Matrix(_zoom, 0, 0, _zoom,
+                centerX + _panX - _zoom * centerX,
+                centerY + _panY - _zoom * centerY);
+        }
+
+        private Point ScreenToBase(Point point)
+        {
+            Matrix matrix = ViewMatrix();
+            matrix.Invert();
+            return matrix.Transform(point);
         }
 
         private Rect DieRect(WaferDie die)
@@ -246,11 +384,25 @@ namespace StdfViewer
         {
             double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             var xText = new FormattedText("X \u2192", CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"), 11, AxisBrush, dpi);
-            dc.DrawText(xText, new Point(ActualWidth - xText.Width - 10, ActualHeight - xText.Height - 2));
+                new Typeface("Segoe UI"), 11, MutedBrush, dpi);
+            DrawLabel(dc, xText, new Point(ActualWidth - xText.Width - 10, ActualHeight - xText.Height - 6));
             var yText = new FormattedText("\u2191 Y", CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"), 11, AxisBrush, dpi);
-            dc.DrawText(yText, new Point(10, 2));
+                new Typeface("Segoe UI"), 11, MutedBrush, dpi);
+            DrawLabel(dc, yText, new Point(10, 2));
+            if (_zoom > 1.001)
+            {
+                var zoomText = new FormattedText("\u00d7" + _zoom.ToString("0.0", CultureInfo.InvariantCulture),
+                    CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                    new Typeface("Segoe UI"), 11, MutedBrush, dpi);
+                DrawLabel(dc, zoomText, new Point(ActualWidth - zoomText.Width - 10, 2));
+            }
+        }
+
+        private static void DrawLabel(DrawingContext dc, FormattedText text, Point point)
+        {
+            dc.DrawRoundedRectangle(LabelFill, null,
+                new Rect(point.X - 4, point.Y - 1, text.Width + 8, text.Height + 2), 3, 3);
+            dc.DrawText(text, point);
         }
 
         private static bool IsTooLarge(WaferMapWafer wafer)

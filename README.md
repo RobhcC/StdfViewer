@@ -11,7 +11,7 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 ### Features
 
 - **Summary** tab — a one-page overview of the loaded file: size / records / types / DUT count / yield / scan time / byte order, then the decoded `File`, `MIR`, `MRR`, `SDR`, `WIR`/`WRR`/`WCR`, `PCR` sections, `HBR` / `SBR` tables and a record-count breakdown. Record names and field names are always shown in English.
-- **Wafer** tab — a die map built from `PRR` X/Y and hard bin, one map per `WIR`/`WRR` wafer (pick the wafer at the top). The die grid is scaled independently in X and Y to fill a round wafer, so rectangular die arrays still render as a circle. Die cells are coloured by hard bin with a count/share legend, X to the right and Y up; hover shows X/Y/bin/site. The notch direction comes from the `WCR` `WF_FLAT` orientation (`U`/`D`/`L`/`R`); without a usable `WCR` it defaults to down and can be overridden with the notch selector. Duplicate coordinates (retests) keep the last `PRR` and are counted; yield uses the `WRR` good/part counts.
+- **Wafer** tab — a die map built from `PRR` X/Y and hard bin, one map per `WIR`/`WRR` wafer (pick the wafer at the top). The die grid is scaled independently in X and Y to fill a round wafer, so rectangular die arrays still render as a circle. Die cells are coloured by hard bin with a count/share legend, X to the right and Y up; hover shows X/Y/bin/site. The wheel zooms at the cursor, dragging pans and a double-click restores the fit view. The notch direction comes from the `WCR` `WF_FLAT` orientation (`U`/`D`/`L`/`R`); without a usable `WCR` it defaults to down and can be overridden with the notch selector. Duplicate coordinates (retests) keep the last `PRR` and are counted; yield uses the `WRR` good/part counts.
 - **Scan** the whole STDF file into a record index (offset / type / length). The scan runs in the background, so the window stays responsive on large files.
 - **Record types** panel — per type/sub pair: count, total bytes and first record number. Click a row to filter the record list.
 - **Records** panel — records in file order with `#`, type name, `typ,sub`, offset and `REC_LEN`. Type a record number into the box and press Enter to jump to it.
@@ -25,7 +25,7 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 ### Requirements
 
 - Windows 10 / 11
-- Build: .NET 9 SDK. The published `StdfViewer.exe` needs nothing installed.
+- Build: .NET 9 SDK; NuGet restore pulls `CommunityToolkit.Mvvm` 8.4.2. The published `StdfViewer.exe` needs nothing installed.
 
 ### Build and run
 
@@ -84,8 +84,11 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 
 | File | Role |
 | --- | --- |
-| `App.xaml` / `App.xaml.cs` | Application entry point, command-line file argument |
-| `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | Window layout (XAML) and interaction logic |
+| `App.xaml` / `App.xaml.cs` | Application entry point and MVVM composition root |
+| `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | Window shell: toolbar + tab host |
+| `Views/*.xaml` | Tab views: `SummaryView`, `BrowseView`, `HistoryView`, `CompareView`, `WaferView` |
+| `ViewModels/*.cs` | `MainViewModel` and the five page view models, built on CommunityToolkit.Mvvm |
+| `Services/DialogService.cs` | File picker and confirmation dialogs behind `IDialogService` |
 | `Themes/Palette.xaml` | Colours, font and size tokens |
 | `Themes/Controls.xaml` | Control styles (buttons, lists, headers, scrollbars, splitters) |
 | `Themes/Strings.en-US.xaml` / `Themes/Strings.zh-CN.xaml` | UI strings; record and field names stay English |
@@ -101,6 +104,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 | `HistoryStore.cs` | Parse-result snapshots, persisted to `history.json` next to the executable |
 | `StdfComparer.cs` | Type-level diff, type-order check and RLE structure comparison |
 
+The UI is MVVM: `MainViewModel` owns the five page view models, scans files on a background thread and hands the scanned file to the Summary, Browse and Wafer view models. Each tab is a `UserControl` bound to its page view model; the only view interaction code-behind left is scroll-to-record in `BrowseView`.
+
 ---
 
 ## 中文
@@ -110,7 +115,7 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 ### 功能
 
 - **汇总页**：一页看完当前文件——大小 / 记录数 / 类型数 / DUT 数 / 良率 / 扫描耗时 / 字节序，下面依次是 `File`、`MIR`、`MRR`、`SDR`、`WIR`/`WRR`/`WCR`、`PCR` 各记录段的字段、`HBR` / `SBR` 分箱表和记录条数统计。记录名与字段名始终显示英文。
-- **晶圆页**：用 `PRR` 的 X/Y 和硬 bin 画 die map，按 `WIR`/`WRR` 分片，可在顶部切换晶圆；die 网格按 X/Y 分别缩放后铺满圆形晶圆，矩形 die 阵列也会显示为圆形。die 按硬 bin 上色，右侧图例带数量和占比，X 向右、Y 向上，悬停显示 X/Y/bin/site。缺口方向取自 `WCR` 的 `WF_FLAT`（`U`/`D`/`L`/`R`）；文件里没有可用的 `WCR` 时默认缺口朝下，可用缺口下拉手动改。同坐标重测以后一条 `PRR` 为准并计入重测数；良率用 `WRR` 的 GOOD_CNT/PART_CNT。
+- **晶圆页**：用 `PRR` 的 X/Y 和硬 bin 画 die map，按 `WIR`/`WRR` 分片，可在顶部切换晶圆；die 网格按 X/Y 分别缩放后铺满圆形晶圆，矩形 die 阵列也会显示为圆形。die 按硬 bin 上色，右侧图例带数量和占比，X 向右、Y 向上，悬停显示 X/Y/bin/site；滚轮以鼠标为中心缩放，按住左键拖动平移，双击复位。缺口方向取自 `WCR` 的 `WF_FLAT`（`U`/`D`/`L`/`R`）；文件里没有可用的 `WCR` 时默认缺口朝下，可用缺口下拉手动改。同坐标重测以后一条 `PRR` 为准并计入重测数；良率用 `WRR` 的 GOOD_CNT/PART_CNT。
 - **扫描**整个 STDF 文件，建立记录索引（偏移 / 类型 / 长度）；扫描在后台线程执行，大文件时界面不会卡住。
 - **Record types** 面板：按 类型/子类型 统计条数、总字节数、首个记录号；点击某行即可过滤中间的记录列表。
 - **Records** 面板：按文件顺序列出记录，显示 `#`、记录名、`typ,sub`、偏移和 `REC_LEN`；在跳转框里输入记录号回车即可跳转。
@@ -124,7 +129,7 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 ### 运行环境
 
 - Windows 10 / 11
-- 构建需要 .NET 9 SDK；发布出来的单个 exe 不需要安装任何运行时
+- 构建需要 .NET 9 SDK；NuGet 还原会拉取 `CommunityToolkit.Mvvm` 8.4.2；发布出来的单个 exe 不需要安装任何运行时
 
 ### 构建与运行
 
@@ -183,8 +188,11 @@ dotnet publish .\StdfViewer.csproj
 
 | 文件 | 作用 |
 | --- | --- |
-| `App.xaml` / `App.xaml.cs` | 程序入口、命令行文件参数 |
-| `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | 窗口界面（XAML）与交互逻辑 |
+| `App.xaml` / `App.xaml.cs` | 程序入口与 MVVM 组装 |
+| `ViewerWindow.xaml` / `ViewerWindow.xaml.cs` | 窗口外壳：工具栏 + 页签宿主 |
+| `Views/*.xaml` | 5 个页签视图：`SummaryView`、`BrowseView`、`HistoryView`、`CompareView`、`WaferView` |
+| `ViewModels/*.cs` | `MainViewModel` 与 5 个页面 ViewModel（基于 CommunityToolkit.Mvvm） |
+| `Services/DialogService.cs` | 选文件/确认框，VM 通过 `IDialogService` 调用 |
 | `Themes/Palette.xaml` | 颜色、字体与尺寸资源 |
 | `Themes/Controls.xaml` | 控件样式（按钮、列表、列头、滚动条、分割条） |
 | `Themes/Strings.en-US.xaml` / `Themes/Strings.zh-CN.xaml` | 界面文案；记录名与字段名不翻译 |
@@ -199,3 +207,5 @@ dotnet publish .\StdfViewer.csproj
 | `RecordRow.cs` | 记录列表行模型与构建器 |
 | `HistoryStore.cs` | 解析结果快照（存到 exe 同目录的 `history.json`） |
 | `StdfComparer.cs` | 类型层差异、类型出现顺序与 RLE 结构对比 |
+
+界面采用 MVVM：`MainViewModel` 持有 5 个页面 ViewModel，在后台扫描文件后把结果分发给汇总、浏览和晶圆页；每个页签是绑定到对应页面 ViewModel 的 UserControl，唯一保留的视图交互后置代码是浏览页的选中行滚动。

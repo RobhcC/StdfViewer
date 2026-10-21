@@ -1,0 +1,75 @@
+<UserControl x:Class="StdfViewer.Views.BrowseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="0,0,0,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="370"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Browse.Types}"
+                           Style="{StaticResource Style.SectionTitle}"/>
+                <ListView ItemsSource="{Binding Types}"
+                          SelectedItem="{Binding SelectedType, Mode=TwoWay}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Type}" Width="52" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Count}" Width="70" DisplayMemberBinding="{Binding Count}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Bytes}" Width="82" DisplayMemberBinding="{Binding Bytes}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.First}" Width="70" DisplayMemberBinding="{Binding FirstSeq}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="1"/>
+
+        <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Browse.Records}"
+                           Style="{StaticResource Style.SectionTitle}"/>
+                <ListView x:Name="_records" ItemsSource="{Binding Records}"
+                          SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
+                          SelectionChanged="OnRecordsSelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="#" Width="52" DisplayMemberBinding="{Binding No}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Type}" Width="50" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="Typ,Sub" Width="50" DisplayMemberBinding="{Binding TypSub}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Offset}" Width="76" DisplayMemberBinding="{Binding Offset}"/>
+                            <GridViewColumn Header="LEN" Width="46" DisplayMemberBinding="{Binding Len}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="3"/>
+
+        <Border Grid.Column="4" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Text="{Binding RecordHeadText}"
+                           Style="{StaticResource Style.SectionTitle}"/>
+                <ListView ItemsSource="{Binding Fields}" Focusable="False">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Index}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Field}" Width="104" DisplayMemberBinding="{Binding NameText}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.StdfType}" Width="66" DisplayMemberBinding="{Binding Type}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Value}" Width="240" DisplayMemberBinding="{Binding ValueText}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.RawBytes}" Width="200" DisplayMemberBinding="{Binding Hex}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Status}" Width="90" DisplayMemberBinding="{Binding StatusText}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

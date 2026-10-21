@@ -1,0 +1,123 @@
+<UserControl x:Class="StdfViewer.Views.WaferView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:StdfViewer">
+    <Grid Margin="0,0,0,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <WrapPanel DockPanel.Dock="Top" Margin="12,10,12,6">
+                    <TextBlock Text="{DynamicResource Str.Wafer.Wafer}" VerticalAlignment="Center"
+                               Style="{StaticResource Style.Text.Info}"/>
+                    <ComboBox Width="190" Margin="8,0,24,0" IsEnabled="{Binding HasWafers}"
+                              ItemsSource="{Binding Wafers}"
+                              SelectedItem="{Binding SelectedWafer, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="{DynamicResource Str.Wafer.Notch}" VerticalAlignment="Center"
+                               Style="{StaticResource Style.Text.Info}"/>
+                    <ComboBox Width="110" Margin="8,0,0,0" IsEnabled="{Binding HasWafers}"
+                              SelectedIndex="{Binding NotchMode, Mode=TwoWay}">
+                        <ComboBoxItem Content="{DynamicResource Str.Wafer.NotchAuto}"/>
+                        <ComboBoxItem Content="{DynamicResource Str.Wafer.Up}"/>
+                        <ComboBoxItem Content="{DynamicResource Str.Wafer.Down}"/>
+                        <ComboBoxItem Content="{DynamicResource Str.Wafer.Left}"/>
+                        <ComboBoxItem Content="{DynamicResource Str.Wafer.Right}"/>
+                    </ComboBox>
+                </WrapPanel>
+
+                <TextBlock DockPanel.Dock="Top" Margin="12,0,12,6" Text="{Binding StatsText}"
+                           TextWrapping="Wrap" Style="{StaticResource Style.Text.Info}"/>
+                <TextBlock DockPanel.Dock="Bottom" Margin="12,4,12,10" Height="18" Text="{Binding HoverText}"
+                           Style="{StaticResource Style.Text.Info}"/>
+
+                <Grid Margin="12,0,12,0">
+                    <local:WaferMapView Wafer="{Binding SelectedWafer}"
+                                        Notch="{Binding Notch}"
+                                        HoveredDie="{Binding HoveredDie, Mode=TwoWay}">
+                        <local:WaferMapView.Style>
+                            <Style TargetType="local:WaferMapView">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasMap}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </local:WaferMapView.Style>
+                    </local:WaferMapView>
+                    <TextBlock Text="{Binding EmptyText}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="520">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Style.Text.Info}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasMap}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="1"/>
+
+        <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Wafer.Legend}"
+                           Style="{StaticResource Style.SectionTitle}"/>
+                <Grid DockPanel.Dock="Top" Margin="12,0,12,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="76"/>
+                        <ColumnDefinition Width="62"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="1" Text="{DynamicResource Str.Wafer.Bin}"
+                               Style="{StaticResource Style.Text.Info}"/>
+                    <TextBlock Grid.Column="2" Text="{DynamicResource Str.Wafer.Count}"
+                               HorizontalAlignment="Right" Style="{StaticResource Style.Text.Info}"/>
+                    <TextBlock Grid.Column="3" Text="{DynamicResource Str.Wafer.Percent}"
+                               HorizontalAlignment="Right" Style="{StaticResource Style.Text.Info}"/>
+                </Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding BinRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="12,3,12,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="18"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="76"/>
+                                        <ColumnDefinition Width="62"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="12" Height="12" CornerRadius="2"
+                                            Background="{Binding Fill}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding BinText}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding CountText}"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding PercentText}"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Foreground="{StaticResource Brush.TextMuted}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

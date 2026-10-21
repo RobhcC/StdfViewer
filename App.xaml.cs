@@ -1,4 +1,6 @@
 using System.Windows;
+using StdfViewer.Services;
+using StdfViewer.ViewModels;
 
 namespace StdfViewer
 {
@@ -8,11 +10,16 @@ namespace StdfViewer
         {
             base.OnStartup(e);
             Loc.Initialize();
-            var window = new ViewerWindow();
-            if (e.Args.Length > 0)
-                window.QueueLoad(e.Args[0]);
+
+            var store = new HistoryStore();
+            store.Load();
+            var main = new MainViewModel(store, new DialogService());
+            var window = new ViewerWindow { DataContext = main };
             MainWindow = window;
             window.Show();
+
+            if (e.Args.Length > 0)
+                _ = main.LoadAsync(e.Args[0]);
         }
     }
 }

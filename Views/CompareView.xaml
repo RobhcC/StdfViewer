@@ -1,0 +1,91 @@
+<UserControl x:Class="StdfViewer.Views.CompareView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="0,0,0,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="6"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Compare.Pick}"
+                           Style="{StaticResource Style.SectionTitle}"/>
+                <StackPanel DockPanel.Dock="Top" Margin="12,0,12,8">
+                    <TextBlock Text="{DynamicResource Str.Compare.Left}" FontWeight="SemiBold"/>
+                    <TextBlock Margin="0,2,0,8" Text="{Binding LeftText}" TextWrapping="Wrap"
+                               Foreground="{StaticResource Brush.TextMuted}"/>
+                    <TextBlock Text="{DynamicResource Str.Compare.Right}" FontWeight="SemiBold"/>
+                    <TextBlock Margin="0,2,0,0" Text="{Binding RightText}" TextWrapping="Wrap"
+                               Foreground="{StaticResource Brush.TextMuted}"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Bottom" Margin="12,8,12,12">
+                    <Button Content="{DynamicResource Str.Compare.SetLeft}"
+                            Style="{StaticResource Style.Button.Secondary}"
+                            HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                            Command="{Binding SetLeftCommand}"/>
+                    <Button Content="{DynamicResource Str.Compare.SetRight}"
+                            Style="{StaticResource Style.Button.Secondary}"
+                            HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                            Command="{Binding SetRightCommand}"/>
+                    <Button Content="{DynamicResource Str.Compare.Run}"
+                            Style="{StaticResource Style.Button.Primary}"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding CompareCommand}"
+                            IsEnabled="{Binding CanCompare}"/>
+                </StackPanel>
+                <ListView ItemsSource="{Binding Entries}"
+                          SelectedItem="{Binding SelectedEntry, Mode=TwoWay}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="{DynamicResource Str.Col.File}" Width="150" DisplayMemberBinding="{Binding FileName}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Parsed}" Width="110" DisplayMemberBinding="{Binding ParsedAt}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter Grid.Column="1"/>
+
+        <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+            <Grid Margin="12,0,12,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="{DynamicResource Str.Compare.TypeDiff}" Margin="0,10,0,6"
+                           FontWeight="SemiBold"/>
+                <TextBlock Grid.Row="1" Margin="0,0,0,8" Text="{Binding SummaryText}" TextWrapping="Wrap"
+                           Foreground="{StaticResource Brush.TextMuted}"/>
+
+                <ListView Grid.Row="2" ItemsSource="{Binding Types}" ItemContainerStyle="{StaticResource Style.CompareRow}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Typ,Sub" Width="80" DisplayMemberBinding="{Binding TypSub}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Name}" Width="90" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Left}" Width="80"
+                                            DisplayMemberBinding="{Binding LeftCount, StringFormat={}{0:N0}}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Right}" Width="80"
+                                            DisplayMemberBinding="{Binding RightCount, StringFormat={}{0:N0}}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Delta}" Width="80"
+                                            DisplayMemberBinding="{Binding Delta, StringFormat={}{0:N0}}"/>
+                            <GridViewColumn Header="{DynamicResource Str.Col.Status}" Width="90" DisplayMemberBinding="{Binding StatusText}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <TextBlock Grid.Row="3" Text="{DynamicResource Str.Compare.Struct}" Margin="0,10,0,6"
+                           FontWeight="SemiBold"/>
+                <TextBox Grid.Row="4"
+                         Style="{StaticResource Style.TextBox.Multiline}"
+                         Text="{Binding StructureText, Mode=OneWay}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

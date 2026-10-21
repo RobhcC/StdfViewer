@@ -109,6 +109,7 @@
     <sys:String x:Key="Str.Wafer.Hover">X={0}   Y={1}   HARD_BIN={2}   SITE={3}</sys:String>
     <sys:String x:Key="Str.Wafer.RetestMark">重测×{0}</sys:String>
     <sys:String x:Key="Str.Wafer.BadExtent">坐标范围异常（{0} × {1}），未绘制。请检查 PRR 的 X_COORD / Y_COORD。</sys:String>
+    <sys:String x:Key="Str.Wafer.ZoomHint">滚轮以鼠标为中心缩放，按住左键拖动平移，双击复位</sys:String>
 
     <sys:String x:Key="Str.Summary.Empty">打开一个文件后在这里显示汇总。</sys:String>
     <sys:String x:Key="Str.Kpi.Size">大小</sys:String>
