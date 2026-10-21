@@ -6,12 +6,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace StdfViewer
 {
     public sealed partial class ViewerWindow : Window
     {
         private const int ListRowLimit = 20000;
+
+        private sealed class WaferBinRow
+        {
+            public Brush Fill { get; set; }
+            public string BinText { get; set; }
+            public string CountText { get; set; }
+            public string PercentText { get; set; }
+        }
 
         // 对比时，两侧各自的数据来源：磁盘重扫（带记录序列）或历史快照（只有类型统计）
         private sealed class CompareInput
@@ -37,6 +46,7 @@ namespace StdfViewer
         private DecodedRecord _record;
         private ComparePair _comparePair;
         private bool _compareOnDisk;
+        private WaferMap _waferMap;
 
         public ViewerWindow()
         {
@@ -89,6 +99,8 @@ namespace StdfViewer
             bool browse = ReferenceEquals(_tabs.SelectedItem, _tabBrowse);
             _all.IsEnabled = browse;
             _jump.IsEnabled = browse;
+            if (_tabWafer != null && ReferenceEquals(_tabs.SelectedItem, _tabWafer))
+                ShowWaferTab();
         }
 
         private async Task LoadAsync(string path)
@@ -113,6 +125,10 @@ namespace StdfViewer
             _summary = null;
             ApplySummary();
             ShowRecords();
+            _waferMap = null;
+            ResetWaferTab();
+            if (ReferenceEquals(_tabs.SelectedItem, _tabWafer))
+                ShowWaferTab();
         }
 
         private void ShowRecords()
@@ -241,6 +257,8 @@ namespace StdfViewer
             else
                 _cmpSummary.Text = Loc.T(_cmpLeft != null && ReferenceEquals(_cmpLeft, _cmpRight) ? "Str.Compare.SameSide" : "Str.Compare.Placeholder");
             UpdateCompareLabels();
+            if (_waferMap != null || ReferenceEquals(_tabs.SelectedItem, _tabWafer))
+                ShowWaferTab();
         }
 
         protected override void OnClosed(EventArgs e)
@@ -513,6 +531,188 @@ namespace StdfViewer
         private static string SegmentText(string text)
         {
             return string.IsNullOrEmpty(text) ? Loc.T("Str.Compare.NoSegment") : text;
+        }
+
+        private void ShowWaferTab()
+        {
+            if (_file == null)
+            {
+                ResetWaferTab();
+                return;
+            }
+            if (_waferMap == null)
+            {
+                try
+                {
+                    _waferMap = WaferMap.Build(_file);
+                }
+                catch (Exception ex)
+                {
+                    ResetWaferTab(Loc.T("Str.Wafer.BuildFailed", ex.Message));
+                    return;
+                }
+            }
+            if (_waferMap.Wafers.Count == 0)
+            {
+                ResetWaferTab(Loc.T("Str.Wafer.NoCoords"));
+                return;
+            }
+
+            _waferPick.IsEnabled = true;
+            _waferNotch.IsEnabled = true;
+            if (!ReferenceEquals(_waferPick.ItemsSource, _waferMap.Wafers))
+                _waferPick.ItemsSource = _waferMap.Wafers;
+            if (_waferPick.SelectedIndex < 0)
+                _waferPick.SelectedIndex = 0;
+            else
+                UpdateWaferView();
+        }
+
+        private void ResetWaferTab()
+        {
+            ResetWaferTab(Loc.T("Str.Wafer.FileEmpty"));
+        }
+
+        private void ResetWaferTab(string text)
+        {
+            _waferView.SetWafer(null, 'D');
+            _waferView.Visibility = Visibility.Collapsed;
+            _waferEmpty.Text = text;
+            _waferEmpty.Visibility = Visibility.Visible;
+            _waferPick.ItemsSource = null;
+            _waferPick.SelectedIndex = -1;
+            _waferPick.IsEnabled = false;
+            _waferNotch.SelectedIndex = 0;
+            _waferNotch.IsEnabled = false;
+            _waferStats.Text = "";
+            _waferHover.Text = "";
+            _waferBins.ItemsSource = null;
+        }
+
+        private void OnWaferSelected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_waferView == null)
+                return;
+            _waferHover.Text = "";
+            UpdateWaferView();
+        }
+
+        private void OnNotchChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_waferView == null || _waferPick == null || _waferPick.SelectedItem == null)
+                return;
+            UpdateWaferView();
+        }
+
+        private void OnWaferHoverChanged(object sender, EventArgs e)
+        {
+            WaferDie die = _waferView.HoveredDie;
+            if (die == null)
+            {
+                _waferHover.Text = "";
+                return;
+            }
+            string text = Loc.T("Str.Wafer.Hover", die.X, die.Y, die.HardBin, die.SiteNum);
+            if (die.Retests > 0)
+                text += "   " + Loc.T("Str.Wafer.RetestMark", die.Retests);
+            _waferHover.Text = text;
+        }
+
+        private void UpdateWaferView()
+        {
+            WaferMapWafer wafer = _waferPick.SelectedItem as WaferMapWafer;
+            if (wafer == null)
+                return;
+
+            int mode = _waferNotch.SelectedIndex;
+            char notch;
+            string sourceKey;
+            if (mode > 0)
+            {
+                notch = "UDLR"[mode - 1];
+                sourceKey = "Str.Wafer.NotchManual";
+            }
+            else
+            {
+                bool fromWcr = IsNotch(wafer.Flat);
+                notch = fromWcr ? wafer.Flat : 'D';
+                sourceKey = fromWcr ? "Str.Wafer.NotchWcr" : "Str.Wafer.NotchDefault";
+            }
+
+            _waferView.SetWafer(wafer, notch);
+            if (_waferView.TooLarge)
+            {
+                long cols = (long)wafer.MaxX - wafer.MinX + 1;
+                long rows = (long)wafer.MaxY - wafer.MinY + 1;
+                _waferEmpty.Text = Loc.T("Str.Wafer.BadExtent",
+                    cols.ToString("N0", CultureInfo.InvariantCulture),
+                    rows.ToString("N0", CultureInfo.InvariantCulture));
+                _waferEmpty.Visibility = Visibility.Visible;
+                _waferView.Visibility = Visibility.Collapsed;
+                _waferStats.Text = "";
+                _waferHover.Text = "";
+                _waferBins.ItemsSource = null;
+                return;
+            }
+
+            _waferEmpty.Visibility = Visibility.Collapsed;
+            _waferView.Visibility = Visibility.Visible;
+            UpdateWaferStats(wafer, notch, sourceKey);
+            BuildWaferLegend(wafer);
+        }
+
+        private void UpdateWaferStats(WaferMapWafer wafer, char notch, string sourceKey)
+        {
+            var text = new StringBuilder();
+            if (wafer.WaferId.Length > 0)
+                text.Append("WAFER_ID=").Append(wafer.WaferId).Append("   ");
+            text.Append(Loc.T("Str.Wafer.Die")).Append('=')
+                .Append(wafer.Dice.Count.ToString("N0", CultureInfo.InvariantCulture));
+            text.Append("   ").Append(Loc.T("Str.Kpi.Yield")).Append('=');
+            if (wafer.PartCount > 0)
+                text.Append((100.0 * wafer.GoodCount / wafer.PartCount).ToString("F2", CultureInfo.InvariantCulture)).Append('%');
+            else
+                text.Append(Loc.T("Str.Word.Na"));
+            text.Append("   ").Append(Loc.T("Str.Wafer.Retest")).Append('=')
+                .Append(wafer.RetestCount.ToString("N0", CultureInfo.InvariantCulture));
+            text.Append("   ").Append(Loc.T(sourceKey, DirectionWord(notch)));
+            _waferStats.Text = text.ToString();
+        }
+
+        private void BuildWaferLegend(WaferMapWafer wafer)
+        {
+            var bins = new List<int>(wafer.BinCounts.Keys);
+            bins.Sort();
+            var rows = new List<WaferBinRow>(bins.Count);
+            int total = wafer.Dice.Count;
+            foreach (int bin in bins)
+            {
+                int count = wafer.BinCounts[bin];
+                rows.Add(new WaferBinRow
+                {
+                    Fill = WaferMapView.BrushForBin(bin),
+                    BinText = "BIN " + bin.ToString(CultureInfo.InvariantCulture),
+                    CountText = count.ToString("N0", CultureInfo.InvariantCulture),
+                    PercentText = (100.0 * count / total).ToString("F2", CultureInfo.InvariantCulture) + "%",
+                });
+            }
+            _waferBins.ItemsSource = rows;
+        }
+
+        private static bool IsNotch(char value)
+        {
+            return value == 'U' || value == 'D' || value == 'L' || value == 'R';
+        }
+
+        private static string DirectionWord(char notch)
+        {
+            switch (notch)
+            {
+                case 'U': return Loc.T("Str.Wafer.Up");
+                case 'L': return Loc.T("Str.Wafer.Left");
+                case 'R': return Loc.T("Str.Wafer.Right");
+                default: return Loc.T("Str.Wafer.Down");
+            }
         }
 
         private static string EndianWord(bool bigEndian)

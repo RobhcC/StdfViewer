@@ -13,6 +13,7 @@
     <sys:String x:Key="Str.Tab.Browse">浏览</sys:String>
     <sys:String x:Key="Str.Tab.History">历史</sys:String>
     <sys:String x:Key="Str.Tab.Compare">对比</sys:String>
+    <sys:String x:Key="Str.Tab.Wafer">晶圆</sys:String>
 
     <sys:String x:Key="Str.Browse.Types">文件中的记录类型</sys:String>
     <sys:String x:Key="Str.Browse.Records">记录（文件顺序）</sys:String>
@@ -85,6 +86,29 @@
     <sys:String x:Key="Str.Compare.OrderDiffers">类型顺序：不同（左 {0} 类，右 {1} 类）；首个差异在第 {2} 项：左 {3}，右 {4}</sys:String>
     <sys:String x:Key="Str.Compare.OrderExtra">类型顺序：前 {0} 项相同，{1} 比 {3} 多 {2} 种类型</sys:String>
     <sys:String x:Key="Str.Compare.OrderSame">类型顺序：一致（{0} 类）</sys:String>
+
+    <sys:String x:Key="Str.Wafer.FileEmpty">打开一个文件后在这里显示晶圆图。</sys:String>
+    <sys:String x:Key="Str.Wafer.NoCoords">当前文件没有带坐标的 PRR 记录（需要 X_COORD / Y_COORD / HARD_BIN）。</sys:String>
+    <sys:String x:Key="Str.Wafer.BuildFailed">晶圆图解析失败：{0}</sys:String>
+    <sys:String x:Key="Str.Wafer.Wafer">晶圆</sys:String>
+    <sys:String x:Key="Str.Wafer.Notch">缺口</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchAuto">自动</sys:String>
+    <sys:String x:Key="Str.Wafer.Up">上</sys:String>
+    <sys:String x:Key="Str.Wafer.Down">下</sys:String>
+    <sys:String x:Key="Str.Wafer.Left">左</sys:String>
+    <sys:String x:Key="Str.Wafer.Right">右</sys:String>
+    <sys:String x:Key="Str.Wafer.Die">DIE 数</sys:String>
+    <sys:String x:Key="Str.Wafer.Retest">重测</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchWcr">缺口={0}（WCR）</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchDefault">缺口={0}（无 WCR，默认）</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchManual">缺口={0}（手选）</sys:String>
+    <sys:String x:Key="Str.Wafer.Legend">分箱图例</sys:String>
+    <sys:String x:Key="Str.Wafer.Bin">BIN</sys:String>
+    <sys:String x:Key="Str.Wafer.Count">数量</sys:String>
+    <sys:String x:Key="Str.Wafer.Percent">占比</sys:String>
+    <sys:String x:Key="Str.Wafer.Hover">X={0}   Y={1}   HARD_BIN={2}   SITE={3}</sys:String>
+    <sys:String x:Key="Str.Wafer.RetestMark">重测×{0}</sys:String>
+    <sys:String x:Key="Str.Wafer.BadExtent">坐标范围异常（{0} × {1}），未绘制。请检查 PRR 的 X_COORD / Y_COORD。</sys:String>
 
     <sys:String x:Key="Str.Summary.Empty">打开一个文件后在这里显示汇总。</sys:String>
     <sys:String x:Key="Str.Kpi.Size">大小</sys:String>

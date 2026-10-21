@@ -11,6 +11,7 @@ A small Windows desktop tool for looking inside **STDF V4** (Standard Test Data 
 ### Features
 
 - **Summary** tab — a one-page overview of the loaded file: size / records / types / DUT count / yield / scan time / byte order, then the decoded `File`, `MIR`, `MRR`, `SDR`, `WIR`/`WRR`/`WCR`, `PCR` sections, `HBR` / `SBR` tables and a record-count breakdown. Record names and field names are always shown in English.
+- **Wafer** tab — a die map built from `PRR` X/Y and hard bin, one map per `WIR`/`WRR` wafer (pick the wafer at the top). The die grid is scaled independently in X and Y to fill a round wafer, so rectangular die arrays still render as a circle. Die cells are coloured by hard bin with a count/share legend, X to the right and Y up; hover shows X/Y/bin/site. The notch direction comes from the `WCR` `WF_FLAT` orientation (`U`/`D`/`L`/`R`); without a usable `WCR` it defaults to down and can be overridden with the notch selector. Duplicate coordinates (retests) keep the last `PRR` and are counted; yield uses the `WRR` good/part counts.
 - **Scan** the whole STDF file into a record index (offset / type / length). The scan runs in the background, so the window stays responsive on large files.
 - **Record types** panel — per type/sub pair: count, total bytes and first record number. Click a row to filter the record list.
 - **Records** panel — records in file order with `#`, type name, `typ,sub`, offset and `REC_LEN`. Type a record number into the box and press Enter to jump to it.
@@ -61,6 +62,7 @@ The output of a plain `dotnet build` is a development artifact and still needs t
 3. **Browse** tab — left panel: click a record type to narrow the middle list; **All types** clears the filter.
 4. Middle panel: click a record. The `#` column is the record number, which is what the jump box expects.
 5. Right panel: the decoded fields of that record. `Raw bytes` shows exactly the bytes consumed by the field, so a field list that does not add up is visible at a glance.
+6. **Wafer** tab: pick a wafer, check the notch direction, and hover a die for its coordinate and hard bin.
 
 ### Supported record types
 
@@ -75,6 +77,7 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 - Unknown record types are listed but shown as `(no layout)` in the Fields panel.
 - If a record's declared length exceeds its layout, the leftover bytes are reported as a `layout gap`.
 - History snapshots keep per-type totals only, not the record-by-record sequence, so the structure comparison needs both files to still be on disk.
+- The wafer map takes coordinates from `PRR`; files without `PRR` X/Y show no map. Die colours follow the hard bin number; the `HBR` pass/fail flag is not used for colouring yet.
 - `history.json` (parse history) and `settings.json` (UI language) are written next to the executable. If that folder is read-only, both still work for the current session but are not persisted.
 
 ### Project structure
@@ -92,6 +95,8 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 | `StdfRecordTable.cs` | Record and field definitions |
 | `StdfDecoder.cs` | Field decoder |
 | `StdfSummary.cs` | Summary-tab model built from a scanned file |
+| `WaferMap.cs` | Per-wafer die map model built from `WIR`/`WRR`/`WCR`/`PRR` |
+| `WaferMapView.cs` | Wafer map drawing, notch/axes and hover hit-testing |
 | `RecordRow.cs` | Record list row model and builder |
 | `HistoryStore.cs` | Parse-result snapshots, persisted to `history.json` next to the executable |
 | `StdfComparer.cs` | Type-level diff, type-order check and RLE structure comparison |
@@ -105,6 +110,7 @@ Variable-length types (`Cn`, `Bn`, `Dn`, `Vn`) and repeated `k`-prefixed fields 
 ### 功能
 
 - **汇总页**：一页看完当前文件——大小 / 记录数 / 类型数 / DUT 数 / 良率 / 扫描耗时 / 字节序，下面依次是 `File`、`MIR`、`MRR`、`SDR`、`WIR`/`WRR`/`WCR`、`PCR` 各记录段的字段、`HBR` / `SBR` 分箱表和记录条数统计。记录名与字段名始终显示英文。
+- **晶圆页**：用 `PRR` 的 X/Y 和硬 bin 画 die map，按 `WIR`/`WRR` 分片，可在顶部切换晶圆；die 网格按 X/Y 分别缩放后铺满圆形晶圆，矩形 die 阵列也会显示为圆形。die 按硬 bin 上色，右侧图例带数量和占比，X 向右、Y 向上，悬停显示 X/Y/bin/site。缺口方向取自 `WCR` 的 `WF_FLAT`（`U`/`D`/`L`/`R`）；文件里没有可用的 `WCR` 时默认缺口朝下，可用缺口下拉手动改。同坐标重测以后一条 `PRR` 为准并计入重测数；良率用 `WRR` 的 GOOD_CNT/PART_CNT。
 - **扫描**整个 STDF 文件，建立记录索引（偏移 / 类型 / 长度）；扫描在后台线程执行，大文件时界面不会卡住。
 - **Record types** 面板：按 类型/子类型 统计条数、总字节数、首个记录号；点击某行即可过滤中间的记录列表。
 - **Records** 面板：按文件顺序列出记录，显示 `#`、记录名、`typ,sub`、偏移和 `REC_LEN`；在跳转框里输入记录号回车即可跳转。
@@ -155,6 +161,7 @@ dotnet publish .\StdfViewer.csproj
 3. **浏览页**左侧面板：点击某个记录类型可过滤中间列表；**All types** 清除过滤。
 4. 中间面板：点击一条记录，`#` 列就是可用于跳转框的记录号。
 5. 右侧面板：显示该记录的字段解码结果。`Raw bytes` 是该字段实际占用的字节，字段表对不上时一眼可见。
+6. **晶圆页**：选晶圆、确认缺口方向，悬停 die 查看坐标和硬 bin。
 
 ### 支持的记录类型
 
@@ -169,6 +176,7 @@ dotnet publish .\StdfViewer.csproj
 - 未知记录类型会列出，但 Fields 面板显示 `(no layout)`。
 - 记录的声明长度大于字段表时，多余字节会以 `layout gap` 提示。
 - 历史快照只保存类型层统计、不保存逐条记录序列，所以结构对比需要两个文件都还在磁盘上。
+- 晶圆图从 `PRR` 取坐标；没有 `PRR` X/Y 的文件不显示地图。die 颜色按硬 bin 编号分配，暂未使用 `HBR` 的通过/失败标志着色。
 - `history.json`（解析历史）与 `settings.json`（界面语言）写在 exe 同目录；该目录只读时两者仍可在本次会话内使用，但不会落盘。
 
 ### 目录结构
@@ -186,6 +194,8 @@ dotnet publish .\StdfViewer.csproj
 | `StdfRecordTable.cs` | 记录与字段定义表 |
 | `StdfDecoder.cs` | 字段解码器 |
 | `StdfSummary.cs` | 汇总页模型（从已扫描的文件构建） |
+| `WaferMap.cs` | 晶圆图模型（按 `WIR`/`WRR`/`WCR`/`PRR` 分片） |
+| `WaferMapView.cs` | 晶圆图绘制、缺口/坐标轴与悬停命中 |
 | `RecordRow.cs` | 记录列表行模型与构建器 |
 | `HistoryStore.cs` | 解析结果快照（存到 exe 同目录的 `history.json`） |
 | `StdfComparer.cs` | 类型层差异、类型出现顺序与 RLE 结构对比 |

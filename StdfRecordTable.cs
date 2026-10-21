@@ -271,15 +271,17 @@ namespace StdfViewer
             }),
             new StdfRecordDef("WCR", 2, 30, new[]
             {
-                F("WAFR_SIZ", StdfType.R4),
-                F("DIE_HT", StdfType.R4),
-                F("DIE_WID", StdfType.R4),
-                F("WF_UNITS", StdfType.U1),
+                F("HEAD_NUM", StdfType.U1),
+                F("SITE_GRP", StdfType.U1),
+                F("WAFER_ID", StdfType.Cn),
                 F("WF_FLAT", StdfType.C1),
-                F("CENTER_X", StdfType.I2),
-                F("CENTER_Y", StdfType.I2),
-                F("POS_X", StdfType.C1),
-                F("POS_Y", StdfType.C1),
+                F("POS_X", StdfType.I2),
+                F("POS_Y", StdfType.I2),
+                F("WF_UNITS", StdfType.U1),
+                F("WF_DIAMETER", StdfType.U2),
+                F("WF_SCOD", StdfType.U1),
+                F("WF_EDGE_CNT", StdfType.U2),
+                F("WF_EDGE_CNT2", StdfType.U2),
             }),
             new StdfRecordDef("PIR", 5, 10, new[]
             {

@@ -13,6 +13,7 @@
     <sys:String x:Key="Str.Tab.Browse">Browse</sys:String>
     <sys:String x:Key="Str.Tab.History">History</sys:String>
     <sys:String x:Key="Str.Tab.Compare">Compare</sys:String>
+    <sys:String x:Key="Str.Tab.Wafer">Wafer</sys:String>
 
     <sys:String x:Key="Str.Browse.Types">Record types in file</sys:String>
     <sys:String x:Key="Str.Browse.Records">Records (file order)</sys:String>
@@ -85,6 +86,29 @@
     <sys:String x:Key="Str.Compare.OrderDiffers">type order: differs (left {0} types, right {1} types); first difference at #{2}: left {3}, right {4}</sys:String>
     <sys:String x:Key="Str.Compare.OrderExtra">type order: same up to #{0}, {1} has {2} more types than {3}</sys:String>
     <sys:String x:Key="Str.Compare.OrderSame">type order: identical ({0} types)</sys:String>
+
+    <sys:String x:Key="Str.Wafer.FileEmpty">Open a file to see its wafer map.</sys:String>
+    <sys:String x:Key="Str.Wafer.NoCoords">This file has no PRR records with coordinates (X_COORD / Y_COORD / HARD_BIN).</sys:String>
+    <sys:String x:Key="Str.Wafer.BuildFailed">Failed to build the wafer map: {0}</sys:String>
+    <sys:String x:Key="Str.Wafer.Wafer">Wafer</sys:String>
+    <sys:String x:Key="Str.Wafer.Notch">Notch</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchAuto">Auto</sys:String>
+    <sys:String x:Key="Str.Wafer.Up">Up</sys:String>
+    <sys:String x:Key="Str.Wafer.Down">Down</sys:String>
+    <sys:String x:Key="Str.Wafer.Left">Left</sys:String>
+    <sys:String x:Key="Str.Wafer.Right">Right</sys:String>
+    <sys:String x:Key="Str.Wafer.Die">DIE</sys:String>
+    <sys:String x:Key="Str.Wafer.Retest">Retests</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchWcr">notch={0} (WCR)</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchDefault">notch={0} (no WCR, default)</sys:String>
+    <sys:String x:Key="Str.Wafer.NotchManual">notch={0} (manual)</sys:String>
+    <sys:String x:Key="Str.Wafer.Legend">Bin legend</sys:String>
+    <sys:String x:Key="Str.Wafer.Bin">BIN</sys:String>
+    <sys:String x:Key="Str.Wafer.Count">Count</sys:String>
+    <sys:String x:Key="Str.Wafer.Percent">Share</sys:String>
+    <sys:String x:Key="Str.Wafer.Hover">X={0}   Y={1}   HARD_BIN={2}   SITE={3}</sys:String>
+    <sys:String x:Key="Str.Wafer.RetestMark">retests x{0}</sys:String>
+    <sys:String x:Key="Str.Wafer.BadExtent">Coordinate span is implausible ({0} x {1}); nothing drawn. Check PRR X_COORD / Y_COORD.</sys:String>
 
     <sys:String x:Key="Str.Summary.Empty">Open a file to see its summary.</sys:String>
     <sys:String x:Key="Str.Kpi.Size">Size</sys:String>

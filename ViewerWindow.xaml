@@ -1,6 +1,7 @@
 <Window x:Class="StdfViewer.ViewerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:StdfViewer"
         Title="STDF Viewer"
         Width="1500" Height="820"
         WindowStartupLocation="CenterScreen"
@@ -354,6 +355,104 @@
                             <TextBox x:Name="_cmpStruct" Grid.Row="4"
                                      Style="{StaticResource Style.TextBox.Multiline}"/>
                         </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="_tabWafer" Header="{DynamicResource Str.Tab.Wafer}">
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <WrapPanel DockPanel.Dock="Top" Margin="12,10,12,6">
+                                <TextBlock Text="{DynamicResource Str.Wafer.Wafer}" VerticalAlignment="Center"
+                                           Style="{StaticResource Style.Text.Info}"/>
+                                <ComboBox x:Name="_waferPick" Width="190" Margin="8,0,24,0" IsEnabled="False"
+                                          SelectionChanged="OnWaferSelected">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Title}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="{DynamicResource Str.Wafer.Notch}" VerticalAlignment="Center"
+                                           Style="{StaticResource Style.Text.Info}"/>
+                                <ComboBox x:Name="_waferNotch" Width="110" Margin="8,0,0,0" IsEnabled="False"
+                                          SelectedIndex="0" SelectionChanged="OnNotchChanged">
+                                    <ComboBoxItem Content="{DynamicResource Str.Wafer.NotchAuto}"/>
+                                    <ComboBoxItem Content="{DynamicResource Str.Wafer.Up}"/>
+                                    <ComboBoxItem Content="{DynamicResource Str.Wafer.Down}"/>
+                                    <ComboBoxItem Content="{DynamicResource Str.Wafer.Left}"/>
+                                    <ComboBoxItem Content="{DynamicResource Str.Wafer.Right}"/>
+                                </ComboBox>
+                            </WrapPanel>
+
+                            <TextBlock x:Name="_waferStats" DockPanel.Dock="Top" Margin="12,0,12,6"
+                                       TextWrapping="Wrap" Style="{StaticResource Style.Text.Info}"/>
+                            <TextBlock x:Name="_waferHover" DockPanel.Dock="Bottom" Margin="12,4,12,10"
+                                       Height="18" Style="{StaticResource Style.Text.Info}"/>
+
+                            <Grid Margin="12,0,12,0">
+                                <local:WaferMapView x:Name="_waferView" Visibility="Collapsed"
+                                                    HoverChanged="OnWaferHoverChanged"/>
+                                <TextBlock x:Name="_waferEmpty" Text="{DynamicResource Str.Wafer.FileEmpty}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center" MaxWidth="520"
+                                           Style="{StaticResource Style.Text.Info}"/>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+
+                    <GridSplitter Grid.Column="1"/>
+
+                    <Border Grid.Column="2" Style="{StaticResource Style.Card}">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str.Wafer.Legend}"
+                                       Style="{StaticResource Style.SectionTitle}"/>
+                            <Grid DockPanel.Dock="Top" Margin="12,0,12,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="18"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="76"/>
+                                    <ColumnDefinition Width="62"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="1" Text="{DynamicResource Str.Wafer.Bin}"
+                                           Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock Grid.Column="2" Text="{DynamicResource Str.Wafer.Count}"
+                                           HorizontalAlignment="Right" Style="{StaticResource Style.Text.Info}"/>
+                                <TextBlock Grid.Column="3" Text="{DynamicResource Str.Wafer.Percent}"
+                                           HorizontalAlignment="Right" Style="{StaticResource Style.Text.Info}"/>
+                            </Grid>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl x:Name="_waferBins">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="12,3,12,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="18"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="76"/>
+                                                    <ColumnDefinition Width="62"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="12" Height="12" CornerRadius="2"
+                                                        Background="{Binding Fill}" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding BinText}" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding CountText}"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding PercentText}"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                           Foreground="{StaticResource Brush.TextMuted}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
                     </Border>
                 </Grid>
             </TabItem>
